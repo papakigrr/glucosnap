@@ -1,0 +1,1457 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GlucoSnap — Σάκχαρο & Θερμίδες</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream:#f8f4ef;--warm-white:#fff9f3;--charcoal:#1a1a1a;--dark-brown:#2d1f0e;
+  --amber:#d4831a;--amber-light:#f5a832;--amber-glow:#fff3e0;
+  --border:#e8ddd0;--shadow:rgba(45,31,14,0.12);
+  --gi-low:#27ae60;--gi-med:#f39c12;--gi-high:#e74c3c;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charcoal);min-height:100vh;}
+
+header{background:var(--dark-brown);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(0,0,0,0.3);}
+.logo{font-family:'Playfair Display',serif;font-size:1.55rem;font-weight:900;color:var(--amber-light);}
+.logo span{color:#fff;}
+.logo-sub{font-size:0.58rem;color:rgba(255,255,255,0.38);letter-spacing:1px;text-transform:uppercase;display:block;margin-top:-3px;}
+.header-right{display:flex;align-items:center;gap:14px;}
+.date-nav{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.08);border-radius:50px;padding:6px 16px;}
+.date-nav button{background:none;border:none;color:var(--amber-light);font-size:1.1rem;cursor:pointer;padding:2px 5px;border-radius:50%;}
+#current-date{color:white;font-weight:500;font-size:0.85rem;min-width:145px;text-align:center;}
+.notif-btn{background:none;border:1px solid rgba(255,255,255,0.18);border-radius:50%;width:33px;height:33px;color:white;cursor:pointer;font-size:0.9rem;display:flex;align-items:center;justify-content:center;position:relative;flex-shrink:0;}
+.notif-badge{position:absolute;top:-4px;right:-4px;background:#e74c3c;color:white;border-radius:50%;width:14px;height:14px;font-size:0.58rem;display:none;align-items:center;justify-content:center;font-weight:700;}
+
+.tabs{background:white;border-bottom:1px solid var(--border);display:flex;max-width:1280px;margin:0 auto;padding:0 22px;}
+.tab-btn{padding:12px 18px;border:none;background:none;cursor:pointer;font-family:'DM Sans';font-size:0.85rem;font-weight:500;color:#999;border-bottom:3px solid transparent;transition:all 0.2s;margin-bottom:-1px;white-space:nowrap;}
+.tab-btn.active{color:var(--amber);border-bottom-color:var(--amber);}
+
+main{max-width:1280px;margin:0 auto;padding:26px 22px;}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+
+/* GLUCOSE TAB */
+.glucose-layout{display:grid;grid-template-columns:1fr 310px;gap:22px;align-items:start;}
+.libre-setup{background:linear-gradient(135deg,#0f1e2d,#1a3a5c);border-radius:18px;padding:24px;color:white;}
+.libre-title{font-family:'Playfair Display',serif;font-size:1.25rem;color:#64b5f6;margin-bottom:4px;}
+.libre-sub{font-size:0.8rem;color:rgba(255,255,255,0.52);margin-bottom:16px;line-height:1.5;}
+.libre-form{display:flex;flex-direction:column;gap:10px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.ig{display:flex;flex-direction:column;gap:4px;}
+.ig label{font-size:0.7rem;color:rgba(255,255,255,0.52);text-transform:uppercase;letter-spacing:0.5px;}
+.li{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.18);border-radius:9px;color:white;padding:8px 12px;font-family:'DM Sans';font-size:0.86rem;}
+.li:focus{outline:none;border-color:#64b5f6;}
+.li::placeholder{color:rgba(255,255,255,0.26);}
+select.li option{background:#1a3a5c;color:white;}
+.remember-row{display:flex;align-items:center;gap:7px;}
+.remember-row label{font-size:0.74rem;color:rgba(255,255,255,0.52);cursor:pointer;}
+.connect-btn{padding:12px;background:linear-gradient(135deg,#1565c0,#42a5f5);border:none;border-radius:10px;color:white;font-family:'DM Sans';font-size:0.9rem;font-weight:600;cursor:pointer;transition:all 0.3s;}
+.connect-btn:hover{transform:translateY(-2px);box-shadow:0 5px 18px rgba(66,165,245,0.4);}
+.connect-btn:disabled{opacity:0.6;cursor:not-allowed;transform:none;}
+#connect-error{margin-top:8px;font-size:0.78rem;color:#ff8a80;display:none;}
+
+.glucose-live{background:linear-gradient(160deg,#0d1b0e,#1a3a22);border-radius:18px;padding:20px;color:white;display:none;}
+.live-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.live-title{font-family:'Playfair Display',serif;font-size:1rem;color:#a8d5a2;}
+.live-status{display:flex;align-items:center;gap:5px;font-size:0.72rem;}
+.live-dot{width:8px;height:8px;background:#4caf50;border-radius:50%;animation:pulse 2s infinite;}
+.live-dot.offline{background:#9e9e9e;animation:none;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+.glucose-big{text-align:center;padding:14px 0;}
+.glucose-value{font-size:4.5rem;font-weight:800;line-height:1;color:#c8f59c;transition:color 0.5s;}
+.glucose-value.high{color:#ff8a80;}
+.glucose-value.low{color:#80d8ff;}
+.glucose-unit{font-size:0.85rem;color:rgba(255,255,255,0.42);margin-top:2px;}
+.glucose-trend{font-size:1.7rem;margin-top:5px;}
+.glucose-time{font-size:0.72rem;color:rgba(255,255,255,0.35);margin-top:2px;}
+.glucose-ranges{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px;}
+.range-box{background:rgba(255,255,255,0.07);border-radius:10px;padding:9px;text-align:center;}
+.range-val{font-size:1rem;font-weight:700;}
+.range-lbl{font-size:0.6rem;opacity:0.52;text-transform:uppercase;margin-top:1px;}
+.glucose-alert{padding:9px 11px;border-radius:10px;font-size:0.78rem;line-height:1.45;margin-top:11px;display:none;}
+.glucose-alert.ok{background:rgba(76,175,80,0.15);border:1px solid rgba(76,175,80,0.22);color:#a5d6a7;}
+.glucose-alert.high{background:rgba(231,76,60,0.15);border:1px solid rgba(231,76,60,0.22);color:#ffcdd2;}
+.glucose-alert.low{background:rgba(33,150,243,0.15);border:1px solid rgba(33,150,243,0.22);color:#b3e5fc;}
+.glucose-alert strong{display:block;margin-bottom:2px;}
+.graph-section{margin-top:18px;}
+.graph-title{font-size:0.72rem;text-transform:uppercase;letter-spacing:0.7px;color:rgba(255,255,255,0.42);margin-bottom:9px;}
+.graph-canvas-wrap{height:105px;background:rgba(255,255,255,0.04);border-radius:10px;overflow:hidden;}
+canvas.gchart{width:100%;height:100%;}
+.history-list{margin-top:14px;}
+.history-row{display:flex;align-items:center;gap:9px;padding:7px 11px;background:rgba(255,255,255,0.05);border-radius:8px;margin-bottom:4px;}
+.hist-time{font-size:0.73rem;color:rgba(255,255,255,0.42);min-width:70px;}
+.hist-val{font-size:0.9rem;font-weight:700;flex:1;}
+.hist-val.ok{color:#c8f59c;}.hist-val.high{color:#ff8a80;}.hist-val.low{color:#80d8ff;}
+.hist-trend{font-size:0.95rem;}
+.ctrl-btns{display:flex;flex-direction:column;gap:6px;margin-top:12px;}
+.refresh-btn{width:100%;padding:9px;background:rgba(255,255,255,0.09);border:1px solid rgba(255,255,255,0.13);border-radius:8px;color:white;font-family:'DM Sans';font-size:0.8rem;cursor:pointer;}
+.disc-btn{width:100%;padding:9px;background:rgba(231,76,60,0.13);border:1px solid rgba(231,76,60,0.22);border-radius:8px;color:#ffcdd2;font-family:'DM Sans';font-size:0.8rem;cursor:pointer;}
+#patient-selector{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px;}
+
+/* SIDEBAR */
+.sidebar{display:flex;flex-direction:column;gap:14px;}
+.sum-card{background:var(--dark-brown);border-radius:18px;padding:20px;color:white;position:relative;overflow:hidden;}
+.sum-card::before{content:'';position:absolute;top:-25px;right:-25px;width:90px;height:90px;background:radial-gradient(circle,rgba(212,131,26,0.22),transparent);border-radius:50%;}
+.sum-title{font-family:'Playfair Display',serif;font-size:0.92rem;color:var(--amber-light);margin-bottom:12px;}
+.goal-edit-row{display:flex;align-items:center;gap:6px;margin-bottom:10px;}
+.goal-edit-row label{font-size:0.73rem;opacity:0.48;flex:1;}
+.goal-inp{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.18);border-radius:7px;color:white;padding:3px 8px;font-family:'DM Sans';font-size:0.78rem;width:68px;text-align:center;}
+.goal-inp:focus{outline:none;border-color:var(--amber-light);}
+.ring-cont{display:flex;justify-content:center;margin-bottom:12px;position:relative;}
+.ring-svg{transform:rotate(-90deg);}
+.ring-bg{fill:none;stroke:rgba(255,255,255,0.1);stroke-width:8;}
+.ring-fill{fill:none;stroke:var(--amber-light);stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset 0.8s ease;}
+.ring-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;}
+.ring-num{font-size:1.6rem;font-weight:700;}
+.ring-lbl{font-size:0.58rem;opacity:0.42;text-transform:uppercase;}
+.goal-row2{display:flex;justify-content:space-between;margin-bottom:9px;font-size:0.78rem;}
+.goal-row2 span:first-child{opacity:0.52;}
+.goal-row2 span:last-child{font-weight:600;color:var(--amber-light);}
+.macros3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:12px;}
+.mac{background:rgba(255,255,255,0.07);border-radius:8px;padding:8px 4px;text-align:center;}
+.mac .v{font-size:0.9rem;font-weight:600;}
+.mac .l{font-size:0.58rem;opacity:0.48;text-transform:uppercase;margin-top:1px;}
+.gl-sum{background:rgba(255,255,255,0.06);border-radius:10px;padding:10px;}
+.gl-sum-title{font-size:0.68rem;text-transform:uppercase;letter-spacing:0.6px;opacity:0.48;margin-bottom:7px;}
+.gl-sum-row{display:flex;justify-content:space-between;align-items:center;}
+.gl-sum-val{font-size:1.2rem;font-weight:700;}
+.gl-day-note{font-size:0.7rem;padding:6px 8px;border-radius:7px;margin-top:6px;}
+.gl-day-note.ok{background:rgba(39,174,96,0.18);color:#7de8a0;}
+.gl-day-note.warn{background:rgba(243,156,18,0.18);color:#ffd480;}
+.gl-day-note.danger{background:rgba(231,76,60,0.18);color:#ff9a9a;}
+
+/* HbA1c CARD */
+.hba1c-card{background:linear-gradient(135deg,#1a0a2e,#2d1653);border-radius:16px;padding:18px;color:white;}
+.hba1c-title{font-family:'Playfair Display',serif;font-size:0.92rem;color:#ce93d8;margin-bottom:10px;}
+.hba1c-avg-row{display:flex;justify-content:space-between;font-size:0.75rem;margin-bottom:10px;}
+.hba1c-avg-row span:first-child{opacity:0.52;}
+.hba1c-avg-row span:last-child{font-weight:600;color:#ce93d8;}
+.hba1c-big{text-align:center;padding:6px 0 10px;}
+.hba1c-val{font-size:2.8rem;font-weight:800;line-height:1;}
+.hba1c-val.good{color:#a5d6a7;}
+.hba1c-val.warn{color:#ffe082;}
+.hba1c-val.bad{color:#ef9a9a;}
+.hba1c-pct{font-size:1rem;opacity:0.55;margin-left:2px;}
+.hba1c-label{font-size:0.68rem;opacity:0.48;margin-top:2px;}
+.hba1c-bar-wrap{height:9px;background:rgba(255,255,255,0.1);border-radius:7px;margin:9px 0;position:relative;}
+.hba1c-bar{height:100%;border-radius:7px;transition:width 1s ease;}
+.hba1c-marker{position:absolute;top:50%;transform:translate(-50%,-50%);width:15px;height:15px;background:white;border-radius:50%;box-shadow:0 0 0 2px rgba(0,0,0,0.3);transition:left 1s ease;}
+.hba1c-zones{display:flex;justify-content:space-between;font-size:0.58rem;opacity:0.4;margin-bottom:9px;}
+.hba1c-info{font-size:0.7rem;opacity:0.52;line-height:1.45;border-top:1px solid rgba(255,255,255,0.1);padding-top:9px;}
+
+/* MEALS IN SIDEBAR */
+.meals-card{background:var(--warm-white);border-radius:16px;padding:18px;border:1px solid var(--border);box-shadow:0 3px 14px var(--shadow);}
+.meals-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.meals-t{font-family:'Playfair Display',serif;font-size:0.92rem;color:var(--dark-brown);}
+.clear-btn2{font-size:0.68rem;color:#e74c3c;background:none;border:none;cursor:pointer;opacity:0.6;}
+.meal-item{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);animation:fadeIn 0.3s;}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+.meal-item:last-child{border-bottom:none;}
+.m-thumb{width:38px;height:38px;border-radius:7px;object-fit:cover;flex-shrink:0;}
+.m-thumb-ph{width:38px;height:38px;border-radius:7px;background:var(--amber-glow);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
+.m-info{flex:1;min-width:0;}
+.m-name{font-weight:600;font-size:0.77rem;color:var(--dark-brown);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.m-type{font-size:0.62rem;color:var(--amber);}
+.m-right{text-align:right;flex-shrink:0;}
+.m-cal{font-size:0.82rem;font-weight:700;color:var(--amber);}
+.m-gi-pill{display:inline-block;font-size:0.56rem;font-weight:700;padding:1px 5px;border-radius:5px;margin-top:2px;}
+.m-gi-pill.low{background:#e8f8ee;color:var(--gi-low);}
+.m-gi-pill.medium{background:#fff4e0;color:#c07b00;}
+.m-gi-pill.high{background:#fde8e8;color:var(--gi-high);}
+.del-btn{background:none;border:none;cursor:pointer;color:#ccc;font-size:0.82rem;flex-shrink:0;padding:2px;}
+.del-btn:hover{color:#e74c3c;}
+.empty-list{text-align:center;padding:18px 0;color:#bbb;font-size:0.82rem;}
+
+/* CALORIE TAB */
+.calorie-layout{display:grid;grid-template-columns:1fr 360px;gap:22px;align-items:start;}
+.card{background:var(--warm-white);border-radius:18px;padding:24px;border:1px solid var(--border);box-shadow:0 3px 16px var(--shadow);}
+.card-title{font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--dark-brown);margin-bottom:4px;}
+.card-sub{font-size:0.8rem;color:#999;margin-bottom:18px;}
+.meal-type-row{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;}
+.meal-btn{flex:1;min-width:68px;padding:7px 9px;border:2px solid var(--border);border-radius:8px;background:white;cursor:pointer;font-family:'DM Sans';font-size:0.78rem;font-weight:500;color:#888;transition:all 0.2s;text-align:center;}
+.meal-btn.active{border-color:var(--amber);background:var(--amber-glow);color:var(--amber);}
+.meal-btn .emoji{display:block;font-size:1.15rem;margin-bottom:2px;}
+.drop-zone{border:2.5px dashed var(--border);border-radius:14px;padding:28px 16px;text-align:center;cursor:pointer;transition:all 0.3s;background:white;position:relative;overflow:hidden;}
+.drop-zone:hover,.drop-zone.drag-over{border-color:var(--amber);background:var(--amber-glow);}
+.drop-zone input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;}
+.drop-icon{font-size:2.2rem;margin-bottom:7px;}
+.drop-text{font-weight:600;color:var(--dark-brown);margin-bottom:2px;font-size:0.85rem;}
+.drop-sub{font-size:0.72rem;color:#aaa;}
+#preview-area{display:none;margin-top:14px;position:relative;}
+#preview-img{width:100%;border-radius:11px;max-height:220px;object-fit:cover;box-shadow:0 3px 14px var(--shadow);}
+.clear-img{position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.58);color:white;border:none;border-radius:50%;width:26px;height:26px;cursor:pointer;font-size:0.8rem;display:flex;align-items:center;justify-content:center;}
+.analyze-btn{margin-top:14px;width:100%;padding:12px;background:linear-gradient(135deg,var(--amber),var(--amber-light));border:none;border-radius:10px;color:white;font-family:'DM Sans';font-size:0.9rem;font-weight:600;cursor:pointer;transition:all 0.3s;box-shadow:0 3px 12px rgba(212,131,26,0.28);display:none;}
+.analyze-btn:hover{transform:translateY(-2px);}
+.analyze-btn:disabled{opacity:0.6;cursor:not-allowed;transform:none;}
+.loading{display:none;flex-direction:column;align-items:center;padding:18px;gap:8px;}
+.spinner{width:30px;height:30px;border:3px solid var(--border);border-top-color:var(--amber);border-radius:50%;animation:spin 0.8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-text{font-size:0.8rem;color:#888;}
+#result-card{display:none;margin-top:18px;background:linear-gradient(160deg,#0f2417,#1a3a22);border-radius:15px;padding:18px;color:white;animation:slideUp 0.4s ease;}
+@keyframes slideUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.r-name{font-family:'Playfair Display',serif;font-size:1.2rem;color:#a8d5a2;margin-bottom:2px;}
+.r-cal{font-size:2.2rem;font-weight:700;color:#c8f59c;line-height:1;margin:4px 0 10px;}
+.r-cal span{font-size:0.82rem;font-weight:400;color:#8cb87a;margin-left:2px;}
+.macros-row{display:flex;gap:7px;margin-bottom:10px;flex-wrap:wrap;}
+.macro{background:rgba(255,255,255,0.08);border-radius:8px;padding:7px 9px;flex:1;min-width:52px;text-align:center;}
+.macro-val{font-size:1rem;font-weight:600;}
+.macro-label{font-size:0.58rem;opacity:0.52;text-transform:uppercase;}
+.gi-section{background:rgba(255,255,255,0.06);border-radius:11px;padding:11px;margin-bottom:10px;}
+.gi-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.gi-title{font-size:0.7rem;text-transform:uppercase;letter-spacing:0.6px;opacity:0.58;}
+.gi-badge{padding:2px 8px;border-radius:14px;font-size:0.7rem;font-weight:700;}
+.gi-badge.low{background:rgba(39,174,96,0.22);color:#6ee89a;border:1px solid rgba(39,174,96,0.28);}
+.gi-badge.medium{background:rgba(243,156,18,0.22);color:#ffc966;border:1px solid rgba(243,156,18,0.28);}
+.gi-badge.high{background:rgba(231,76,60,0.22);color:#ff9f9f;border:1px solid rgba(231,76,60,0.28);}
+.gi-meter{height:9px;background:linear-gradient(90deg,#27ae60 0%,#27ae60 33%,#f39c12 33%,#f39c12 66%,#e74c3c 66%);border-radius:7px;position:relative;margin-bottom:4px;}
+.gi-pointer{position:absolute;top:50%;transform:translate(-50%,-50%);width:15px;height:15px;background:white;border-radius:50%;box-shadow:0 0 0 2px rgba(0,0,0,0.38);transition:left 0.6s ease;}
+.gi-labels{display:flex;justify-content:space-between;font-size:0.58rem;opacity:0.38;}
+.gi-vals{display:flex;gap:8px;margin-top:8px;}
+.gi-val-box{flex:1;background:rgba(255,255,255,0.06);border-radius:7px;padding:7px;text-align:center;}
+.gi-val-num{font-size:1.2rem;font-weight:700;}
+.gi-val-lbl{font-size:0.58rem;opacity:0.48;text-transform:uppercase;margin-top:1px;}
+.diabetes-tip{border-radius:8px;padding:9px 10px;font-size:0.76rem;line-height:1.48;margin-bottom:9px;}
+.diabetes-tip.ok{background:rgba(39,174,96,0.11);border:1px solid rgba(39,174,96,0.22);color:#9de8b8;}
+.diabetes-tip.caution{background:rgba(243,156,18,0.11);border:1px solid rgba(243,156,18,0.22);color:#ffd88a;}
+.diabetes-tip.warning{background:rgba(231,76,60,0.11);border:1px solid rgba(231,76,60,0.22);color:#ffb3b3;}
+.diabetes-tip strong{display:block;margin-bottom:2px;font-size:0.78rem;}
+.r-desc{font-size:0.76rem;opacity:0.6;line-height:1.5;border-top:1px solid rgba(255,255,255,0.1);padding-top:8px;}
+.add-meal-btn{margin-top:10px;width:100%;padding:10px;background:rgba(255,255,255,0.11);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:white;font-family:'DM Sans';font-size:0.82rem;font-weight:600;cursor:pointer;}
+.add-meal-btn:hover{background:rgba(255,255,255,0.18);}
+
+/* HISTORY TAB */
+.hist-controls{display:flex;gap:9px;margin-bottom:18px;flex-wrap:wrap;align-items:center;}
+.hist-ctrl-btn{padding:6px 15px;border:1.5px solid var(--border);border-radius:18px;background:white;cursor:pointer;font-family:'DM Sans';font-size:0.8rem;font-weight:500;color:#888;transition:all 0.2s;}
+.hist-ctrl-btn.active{border-color:var(--amber);background:var(--amber-glow);color:var(--amber);}
+.export-btn{margin-left:auto;padding:6px 15px;border:1.5px solid var(--amber);border-radius:18px;background:transparent;cursor:pointer;font-family:'DM Sans';font-size:0.8rem;font-weight:500;color:var(--amber);}
+.export-btn:hover{background:var(--amber-glow);}
+.history-tab-layout{display:grid;grid-template-columns:1fr 290px;gap:22px;}
+.hist-section-title{font-family:'Playfair Display',serif;font-size:1.05rem;color:var(--dark-brown);margin-bottom:12px;}
+.chart-card{background:var(--warm-white);border-radius:16px;padding:20px;border:1px solid var(--border);box-shadow:0 3px 14px var(--shadow);margin-bottom:18px;}
+.chart-subtitle{font-size:0.75rem;color:#999;margin-bottom:14px;}
+canvas.bigchart{width:100%;height:190px;display:block;}
+canvas.smallchart{width:100%;height:130px;display:block;}
+
+/* TIMELINE */
+.timeline{display:flex;flex-direction:column;gap:8px;margin-top:4px;}
+.tl-item{display:grid;grid-template-columns:65px 1fr auto;gap:10px;align-items:center;padding:9px 12px;background:var(--warm-white);border-radius:10px;border:1px solid var(--border);}
+.tl-time{font-size:0.74rem;color:#888;}
+.tl-event{font-size:0.8rem;color:var(--dark-brown);}
+.tl-badge{font-size:0.63rem;padding:2px 8px;border-radius:11px;font-weight:700;white-space:nowrap;}
+.tl-badge.meal-b{background:var(--amber-glow);color:var(--amber);}
+.tl-badge.ok-b{background:#e8f8ee;color:#27ae60;}
+.tl-badge.high-b{background:#fde8e8;color:#c0392b;}
+.tl-badge.low-b{background:#e3f2fd;color:#1565c0;}
+.tl-divider{text-align:center;font-size:0.65rem;color:#bbb;padding:2px 0;letter-spacing:1px;}
+.tl-empty{text-align:center;padding:22px;color:#ccc;font-size:0.85rem;}
+
+/* STATS */
+.stats-card{background:var(--warm-white);border-radius:16px;padding:18px;border:1px solid var(--border);box-shadow:0 3px 14px var(--shadow);margin-bottom:14px;}
+.stats-title{font-family:'Playfair Display',serif;font-size:0.95rem;color:var(--dark-brown);margin-bottom:12px;}
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:0.8rem;}
+.stat-row:last-child{border-bottom:none;}
+.stat-label{color:#888;}
+.stat-val{font-weight:700;color:var(--dark-brown);}
+.stat-val.good{color:#27ae60;}.stat-val.warn{color:#f39c12;}.stat-val.bad{color:#e74c3c;}
+
+/* NOTIFICATIONS */
+.notif-panel{position:fixed;top:58px;right:18px;width:305px;background:white;border-radius:14px;box-shadow:0 8px 36px rgba(0,0,0,0.18);z-index:200;display:none;max-height:380px;overflow-y:auto;border:1px solid var(--border);}
+.notif-panel.open{display:block;}
+.notif-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:white;}
+.notif-header h4{font-family:'Playfair Display',serif;font-size:0.95rem;color:var(--dark-brown);}
+.notif-clear{font-size:0.7rem;color:#e74c3c;background:none;border:none;cursor:pointer;}
+.notif-item{padding:10px 16px;border-bottom:1px solid var(--border);font-size:0.78rem;line-height:1.45;}
+.notif-item:last-child{border-bottom:none;}
+.notif-item .ni-time{font-size:0.65rem;color:#bbb;margin-top:2px;}
+.notif-item.high{border-left:3px solid #e74c3c;}
+.notif-item.low{border-left:3px solid #3498db;}
+.notif-item.info{border-left:3px solid var(--amber);}
+.notif-empty{padding:18px;text-align:center;color:#bbb;font-size:0.82rem;}
+
+/* TOAST */
+.toast{position:fixed;bottom:22px;right:22px;background:var(--dark-brown);color:white;padding:11px 18px;border-radius:10px;font-size:0.82rem;z-index:300;box-shadow:0 5px 18px rgba(0,0,0,0.28);animation:toastIn 0.3s ease,toastOut 0.3s ease 2.7s forwards;}
+@keyframes toastIn{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+@keyframes toastOut{to{opacity:0;transform:translateY(16px);}}
+
+.disclaimer{font-size:0.65rem;color:#bbb;text-align:center;padding:10px 18px 20px;line-height:1.5;}
+
+@media(max-width:768px){
+  .glucose-layout,.calorie-layout,.history-tab-layout{grid-template-columns:1fr;}
+  header{padding:11px 14px;}.logo{font-size:1.25rem;}
+  main{padding:16px 12px;}
+  .tabs{overflow-x:auto;}.tab-btn{padding:10px 14px;font-size:0.8rem;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Gluco<span>Snap</span>
+    <span class="logo-sub">Σάκχαρο · Θερμίδες · Προδιαβήτης</span>
+  </div>
+  <div class="header-right">
+    <div class="date-nav">
+      <button onclick="changeDay(-1)">‹</button>
+      <div id="current-date"></div>
+      <button onclick="changeDay(1)">›</button>
+    </div>
+    <button class="notif-btn" onclick="toggleNotifPanel()" title="Ειδοποιήσεις">
+      🔔<span class="notif-badge" id="notif-badge"></span>
+    </button>
+  </div>
+</header>
+
+<div class="notif-panel" id="notif-panel">
+  <div class="notif-header">
+    <h4>🔔 Ειδοποιήσεις</h4>
+    <button class="notif-clear" onclick="clearNotifications()">Καθαρισμός</button>
+  </div>
+  <div id="notif-list"><div class="notif-empty">Δεν υπάρχουν ειδοποιήσεις</div></div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab('glucose',this)">🩸 Σάκχαρο</button>
+  <button class="tab-btn" onclick="showTab('calories',this)">🍽️ Θερμίδες & ΓΔ</button>
+  <button class="tab-btn" onclick="showTab('history',this)">📈 Ιστορικό & HbA1c</button>
+</div>
+
+<main>
+
+<!-- ===== GLUCOSE TAB ===== -->
+<div id="tab-glucose" class="tab-panel active">
+  <div class="glucose-layout">
+    <div>
+      <div class="libre-setup" id="libre-setup">
+        <div class="libre-title">🔗 Σύνδεση LibreLinkUp</div>
+        <div class="libre-sub">Συνδέσου για live σάκχαρο. Τα credentials αποθηκεύονται τοπικά (προαιρετικά).</div>
+        <div class="libre-form">
+          <div class="form-row">
+            <div class="ig"><label>Email</label><input type="email" class="li" id="llu-email" placeholder="email@example.com"></div>
+            <div class="ig"><label>Κωδικός</label><input type="password" class="li" id="llu-pass" placeholder="••••••••"></div>
+          </div>
+          <div class="ig">
+            <label>Περιοχή Server</label>
+            <select class="li" id="llu-region">
+              <option value="eu2">Ευρώπη EU2 — Ελλάδα</option>
+              <option value="eu">Ευρώπη EU</option>
+              <option value="">Παγκόσμιο (US)</option>
+              <option value="de">Γερμανία</option>
+              <option value="ae">Μέση Ανατολή</option>
+              <option value="au">Αυστραλία</option>
+              <option value="jp">Ιαπωνία</option>
+            </select>
+          </div>
+          <div class="remember-row">
+            <input type="checkbox" id="remember-me" style="accent-color:var(--amber);width:13px;height:13px;">
+            <label for="remember-me">Αποθήκευση credentials τοπικά</label>
+          </div>
+          <button class="connect-btn" id="connect-btn" onclick="connectLibre()">🔌 Σύνδεση</button>
+        </div>
+        <div id="connect-error"></div>
+      </div>
+
+      <div class="glucose-live" id="glucose-live">
+        <div class="live-header">
+          <span class="live-title">🩸 Τρέχον Σάκχαρο</span>
+          <span class="live-status"><span class="live-dot offline" id="live-dot"></span><span id="live-label">—</span></span>
+        </div>
+        <div id="patient-selector"></div>
+        <div class="glucose-big">
+          <div class="glucose-value" id="glucose-val">--</div>
+          <div class="glucose-unit">mg/dL</div>
+          <div class="glucose-trend" id="glucose-trend">—</div>
+          <div class="glucose-time" id="glucose-time">Αναμονή...</div>
+        </div>
+        <div class="glucose-ranges">
+          <div class="range-box"><div class="range-val" id="g-low">70</div><div class="range-lbl">Κατ. Όριο</div></div>
+          <div class="range-box"><div class="range-val" id="g-high">130</div><div class="range-lbl">Αν. Όριο</div></div>
+        </div>
+        <div class="glucose-alert" id="glucose-alert"></div>
+        <div class="graph-section">
+          <div class="graph-title">📈 Ιστορικό 12 Ωρών</div>
+          <div class="graph-canvas-wrap"><canvas class="gchart" id="glucoseChart"></canvas></div>
+        </div>
+        <div id="history-list" class="history-list"></div>
+        <div class="ctrl-btns">
+          <button class="refresh-btn" onclick="refreshGlucose()">🔄 Ανανέωση</button>
+          <button class="disc-btn" onclick="disconnectLibre()">🔓 Αποσύνδεση</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar">
+      <div class="sum-card">
+        <div class="sum-title">📊 Ημερήσια Σύνοψη</div>
+        <div class="goal-edit-row"><label>Στόχος kcal</label><input type="number" class="goal-inp" id="calorie-goal" value="2000" onchange="updateRingFromGoal()"></div>
+        <div class="ring-cont">
+          <svg width="114" height="114" class="ring-svg"><circle class="ring-bg" cx="57" cy="57" r="48"/><circle class="ring-fill" id="ring-fill" cx="57" cy="57" r="48" stroke-dasharray="301.6" stroke-dashoffset="301.6"/></svg>
+          <div class="ring-center"><div class="ring-num" id="total-cal">0</div><div class="ring-lbl">kcal</div></div>
+        </div>
+        <div class="goal-row2"><span>Υπόλοιπο</span><span id="remaining-cal">2000 kcal</span></div>
+        <div class="macros3">
+          <div class="mac"><div class="v" id="total-prot">0g</div><div class="l">Πρωτ.</div></div>
+          <div class="mac"><div class="v" id="total-carb">0g</div><div class="l">Υδατ.</div></div>
+          <div class="mac"><div class="v" id="total-fat">0g</div><div class="l">Λίπη</div></div>
+        </div>
+        <div class="gl-sum">
+          <div class="gl-sum-title">Γλυκαιμικό Φορτίο Ημέρας</div>
+          <div class="gl-sum-row"><span style="font-size:0.78rem;">Σύνολο ΓΦ</span><span class="gl-sum-val" id="day-gl-total">0</span></div>
+          <div class="gl-day-note ok" id="day-gi-alert">Δεν υπάρχουν γεύματα.</div>
+        </div>
+      </div>
+
+      <div class="hba1c-card">
+        <div class="hba1c-title">🧬 Γλυκοζυλιωμένη Αιμοσφαιρίνη</div>
+        <div class="hba1c-avg-row"><span>Μέσος Σάκχαρο (30 μέρες)</span><span id="hba1c-avg-val">—</span></div>
+        <div class="hba1c-big">
+          <div class="hba1c-val good" id="hba1c-val">—<span class="hba1c-pct">%</span></div>
+          <div class="hba1c-label" id="hba1c-label">Ανεπαρκή δεδομένα</div>
+        </div>
+        <div class="hba1c-bar-wrap">
+          <div class="hba1c-bar" id="hba1c-bar" style="width:0%;background:#27ae60;"></div>
+          <div class="hba1c-marker" id="hba1c-marker" style="left:0%;"></div>
+        </div>
+        <div class="hba1c-zones"><span>4%</span><span>5.7%</span><span>6.5%</span><span>10%</span></div>
+        <div class="hba1c-info">Τύπος Nathan (ADA): HbA1c = (μέσος + 46.7) / 28.7. Βασίζεται στα CGM δεδομένα των τελευταίων 30 ημερών.</div>
+      </div>
+
+      <div class="meals-card">
+        <div class="meals-hdr"><div class="meals-t">🍽️ Γεύματα</div><button class="clear-btn2" onclick="clearAll()">Διαγραφή</button></div>
+        <div id="meals-list"><div class="empty-list">🥗 Δεν υπάρχουν γεύματα</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CALORIE TAB ===== -->
+<div id="tab-calories" class="tab-panel">
+  <div class="calorie-layout">
+    <div>
+      <div class="card">
+        <div class="card-title">Ανάλυση Γεύματος</div>
+        <div class="card-sub">Φωτογράφισε το φαγητό — θερμίδες, μακρο & γλυκαιμικός δείκτης αυτόματα</div>
+        <div class="meal-type-row">
+          <button class="meal-btn active" data-meal="Πρωινό" onclick="selectMeal(this)"><span class="emoji">🌅</span>Πρωινό</button>
+          <button class="meal-btn" data-meal="Μεσημεριανό" onclick="selectMeal(this)"><span class="emoji">☀️</span>Μεσημεριανό</button>
+          <button class="meal-btn" data-meal="Βραδινό" onclick="selectMeal(this)"><span class="emoji">🌙</span>Βραδινό</button>
+          <button class="meal-btn" data-meal="Σνακ" onclick="selectMeal(this)"><span class="emoji">🍎</span>Σνακ</button>
+        </div>
+        <div class="drop-zone" id="drop-zone" ondragover="onDrag(event)" ondragleave="offDrag()" ondrop="onDrop(event)">
+          <input type="file" id="file-input" accept="image/*" onchange="handleFile(event)">
+          <div class="drop-icon">📸</div>
+          <div class="drop-text">Σύρε φωτογραφία ή κάνε κλικ</div>
+          <div class="drop-sub">JPG, PNG, WEBP</div>
+        </div>
+        <div id="preview-area"><img id="preview-img" src="" alt=""><button class="clear-img" onclick="clearImage()">✕</button></div>
+        <button class="analyze-btn" id="analyze-btn" onclick="analyzeImage()">🔍 Ανάλυση Θερμίδων & Γλυκαιμικού Δείκτη</button>
+        <div class="loading" id="loading"><div class="spinner"></div><div class="loading-text">Αναλύω το γεύμα σου...</div></div>
+        <div id="result-card">
+          <div class="r-name" id="r-name"></div>
+          <div class="r-cal" id="r-cal">— <span>kcal</span></div>
+          <div class="macros-row">
+            <div class="macro"><div class="macro-val" id="r-prot">—</div><div class="macro-label">Πρωτεΐνη</div></div>
+            <div class="macro"><div class="macro-val" id="r-carb">—</div><div class="macro-label">Υδατ.</div></div>
+            <div class="macro"><div class="macro-val" id="r-fat">—</div><div class="macro-label">Λίπη</div></div>
+            <div class="macro"><div class="macro-val" id="r-fiber">—</div><div class="macro-label">Φυτ.Ίνες</div></div>
+          </div>
+          <div class="gi-section">
+            <div class="gi-hdr"><span class="gi-title">🩸 Γλυκαιμικός Δείκτης</span><span class="gi-badge" id="r-gi-badge">—</span></div>
+            <div class="gi-meter"><div class="gi-pointer" id="gi-pointer" style="left:0%"></div></div>
+            <div class="gi-labels"><span>0–55 Χαμηλός</span><span>56–69 Μέτριος</span><span>70+ Υψηλός</span></div>
+            <div class="gi-vals">
+              <div class="gi-val-box"><div class="gi-val-num" id="r-gi-val">—</div><div class="gi-val-lbl">ΓΔ</div></div>
+              <div class="gi-val-box"><div class="gi-val-num" id="r-gl-val">—</div><div class="gi-val-lbl">ΓΦ</div></div>
+            </div>
+          </div>
+          <div class="diabetes-tip ok" id="r-diabetes-tip"></div>
+          <div class="r-desc" id="r-desc"></div>
+          <button class="add-meal-btn" onclick="addMeal()">+ Προσθήκη στη Μέρα</button>
+        </div>
+      </div>
+    </div>
+    <div class="sidebar">
+      <div class="sum-card">
+        <div class="sum-title">📊 Ημερήσια Σύνοψη</div>
+        <div class="goal-edit-row"><label>Στόχος kcal</label><input type="number" class="goal-inp" id="calorie-goal2" value="2000" onchange="syncGoal(this)"></div>
+        <div class="ring-cont">
+          <svg width="114" height="114" class="ring-svg"><circle class="ring-bg" cx="57" cy="57" r="48"/><circle class="ring-fill" id="ring-fill2" cx="57" cy="57" r="48" stroke-dasharray="301.6" stroke-dashoffset="301.6"/></svg>
+          <div class="ring-center"><div class="ring-num" id="total-cal2">0</div><div class="ring-lbl">kcal</div></div>
+        </div>
+        <div class="goal-row2"><span>Υπόλοιπο</span><span id="remaining-cal2">2000 kcal</span></div>
+        <div class="macros3">
+          <div class="mac"><div class="v" id="total-prot2">0g</div><div class="l">Πρωτ.</div></div>
+          <div class="mac"><div class="v" id="total-carb2">0g</div><div class="l">Υδατ.</div></div>
+          <div class="mac"><div class="v" id="total-fat2">0g</div><div class="l">Λίπη</div></div>
+        </div>
+        <div class="gl-sum">
+          <div class="gl-sum-title">Γλυκαιμικό Φορτίο Ημέρας</div>
+          <div class="gl-sum-row"><span style="font-size:0.78rem;">Σύνολο ΓΦ</span><span class="gl-sum-val" id="day-gl-total2">0</span></div>
+          <div class="gl-day-note ok" id="day-gi-alert2">Δεν υπάρχουν γεύματα.</div>
+        </div>
+      </div>
+      <div class="meals-card">
+        <div class="meals-hdr"><div class="meals-t">🍽️ Γεύματα</div><button class="clear-btn2" onclick="clearAll()">Διαγραφή</button></div>
+        <div id="meals-list2"><div class="empty-list">🥗 Δεν υπάρχουν γεύματα</div></div>
+      </div>
+    </div>
+  </div>
+  <p class="disclaimer">⚕️ Οι τιμές είναι εκτιμήσεις AI. Δεν αντικαθιστούν ιατρική συμβουλή.</p>
+</div>
+
+<!-- ===== HISTORY TAB ===== -->
+<div id="tab-history" class="tab-panel">
+  <div class="hist-controls">
+    <button class="hist-ctrl-btn active" onclick="setHistRange(7,this)">7 μέρες</button>
+    <button class="hist-ctrl-btn" onclick="setHistRange(14,this)">14 μέρες</button>
+    <button class="hist-ctrl-btn" onclick="setHistRange(30,this)">30 μέρες</button>
+    <button class="hist-ctrl-btn" onclick="setHistRange(90,this)">3 μήνες</button>
+    <button class="export-btn" onclick="exportCSV()">⬇️ Εξαγωγή CSV</button>
+  </div>
+  <div class="history-tab-layout">
+    <div>
+      <div class="chart-card">
+        <div class="hist-section-title">🩸 Ιστορικό Σακχάρου</div>
+        <div class="chart-subtitle">Μέσος όρος, min/max ανά ημέρα · Πράσινη ζώνη = εντός ορίων (70–130)</div>
+        <canvas class="bigchart" id="histGlucoseChart"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="hist-section-title">🍽️ Θερμίδες & Γλυκαιμικό Φορτίο</div>
+        <div class="chart-subtitle">Ημερήσιο σύνολο</div>
+        <canvas class="smallchart" id="histCalChart"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="hist-section-title">⏱️ Timeline Ημέρας</div>
+        <div class="chart-subtitle">Συσχέτιση γευμάτων & σακχάρου για: <strong id="tl-date-label">—</strong></div>
+        <div class="timeline" id="timeline-view"><div class="tl-empty">Επίλεξε ημέρα ή δες τα σημερινά δεδομένα</div></div>
+      </div>
+    </div>
+    <div>
+      <div class="stats-card">
+        <div class="stats-title">📋 Στατιστικά Σακχάρου</div>
+        <div class="stat-row"><span class="stat-label">Μέσος Όρος</span><span class="stat-val" id="st-avg">—</span></div>
+        <div class="stat-row"><span class="stat-label">Μέγιστο</span><span class="stat-val bad" id="st-max">—</span></div>
+        <div class="stat-row"><span class="stat-label">Ελάχιστο</span><span class="stat-val warn" id="st-min">—</span></div>
+        <div class="stat-row"><span class="stat-label">% Εντός Ορίων</span><span class="stat-val good" id="st-tir">—</span></div>
+        <div class="stat-row"><span class="stat-label">% Υψηλό (&gt;130)</span><span class="stat-val bad" id="st-above">—</span></div>
+        <div class="stat-row"><span class="stat-label">% Χαμηλό (&lt;70)</span><span class="stat-val warn" id="st-below">—</span></div>
+      </div>
+      <div class="stats-card">
+        <div class="stats-title">🍽️ Στατιστικά Διατροφής</div>
+        <div class="stat-row"><span class="stat-label">Μέσο kcal/μέρα</span><span class="stat-val" id="st-cal">—</span></div>
+        <div class="stat-row"><span class="stat-label">Μέσο ΓΦ/μέρα</span><span class="stat-val" id="st-gl">—</span></div>
+        <div class="stat-row"><span class="stat-label">Γεύματα σύνολο</span><span class="stat-val" id="st-meals">—</span></div>
+        <div class="stat-row"><span class="stat-label">% Ημέρες ΓΦ ≤80</span><span class="stat-val good" id="st-gl-ok">—</span></div>
+      </div>
+      <div class="stats-card">
+        <div class="stats-title">🧬 HbA1c — Γλυκοζυλιωμένη</div>
+        <div class="hba1c-big" style="padding:4px 0 8px;">
+          <div class="hba1c-val good" id="st-hba1c-big">—<span class="hba1c-pct">%</span></div>
+          <div class="hba1c-label" id="st-hba1c-label">Ανεπαρκή δεδομένα</div>
+        </div>
+        <div class="hba1c-bar-wrap">
+          <div class="hba1c-bar" id="st-hba1c-bar" style="width:0%;background:#27ae60;"></div>
+          <div class="hba1c-marker" id="st-hba1c-marker" style="left:0%;"></div>
+        </div>
+        <div class="hba1c-zones"><span>4%</span><span>5.7%</span><span>6.5%</span><span>10%</span></div>
+        <div style="font-size:0.7rem;color:#888;margin-top:9px;line-height:1.5;">
+          <strong style="color:#27ae60;">Φυσιολογικό:</strong> &lt;5.7%<br>
+          <strong style="color:#f39c12;">Προδιαβήτης:</strong> 5.7–6.4%<br>
+          <strong style="color:#e74c3c;">Διαβήτης:</strong> ≥6.5%
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<!-- ===== JAVASCRIPT ===== -->
+<script>
+// ============================================================
+//  CONSTANTS (mirrors PTST/LibreView-HomeAssistant)
+// ============================================================
+const LLU_PRODUCT  = 'llu.android';
+const LLU_VERSION  = '4.9.0';
+const TREND_ARROWS = {1:'↓↓',2:'↓',3:'→',4:'↑',5:'↑↑'};
+const MEAL_EMOJIS  = {'Πρωινό':'🌅','Μεσημεριανό':'☀️','Βραδινό':'🌙','Σνακ':'🍎'};
+
+// ============================================================
+//  PERSISTENCE — localStorage
+// ============================================================
+const DB_KEY       = 'glucosnap_meals_v4';
+const GLUCOSE_KEY  = 'glucosnap_glucose_v4';
+const NOTIF_KEY    = 'glucosnap_notifs_v4';
+const SETTINGS_KEY = 'glucosnap_settings_v4';
+
+function loadDB(){ try{ return JSON.parse(localStorage.getItem(DB_KEY)||'{}'); } catch{ return {}; } }
+function saveDB(db){ localStorage.setItem(DB_KEY, JSON.stringify(db)); }
+function loadGlucoseDB(){ try{ return JSON.parse(localStorage.getItem(GLUCOSE_KEY)||'{}'); } catch{ return {}; } }
+function saveGlucoseDB(db){ localStorage.setItem(GLUCOSE_KEY, JSON.stringify(db)); }
+function loadSettings(){ try{ return JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}'); } catch{ return {}; } }
+function saveSettings(s){ localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); }
+function loadNotifs(){ try{ return JSON.parse(localStorage.getItem(NOTIF_KEY)||'[]'); } catch{ return []; } }
+function saveNotifs(n){ localStorage.setItem(NOTIF_KEY, JSON.stringify(n)); }
+
+// ============================================================
+//  STATE
+// ============================================================
+let currentDayOffset = 0;
+let allData          = loadDB();
+let glucoseDB        = loadGlucoseDB();
+let libreToken       = null;
+let librePatients    = [];
+let selectedMealType = 'Πρωινό';
+let currentImageB64  = null;
+let currentResult    = null;
+let refreshTimer     = null;
+let histRange        = 7;
+let notifications    = loadNotifs();
+let lastAlertedHigh  = false;
+let lastAlertedLow   = false;
+
+// Restore saved credentials
+const _cfg = loadSettings();
+if(_cfg.email)  document.getElementById('llu-email').value  = _cfg.email;
+if(_cfg.region !== undefined) document.getElementById('llu-region').value = _cfg.region;
+
+// ============================================================
+//  DATE HELPERS
+// ============================================================
+function getDateKey(o=0){
+  const d=new Date(); d.setDate(d.getDate()+o);
+  return d.toISOString().split('T')[0];
+}
+function formatDate(o){
+  const d=new Date(); d.setDate(d.getDate()+o);
+  if(o===0)  return 'Σήμερα, '+d.toLocaleDateString('el-GR',{day:'numeric',month:'long'});
+  if(o===-1) return 'Χθες, '+d.toLocaleDateString('el-GR',{day:'numeric',month:'long'});
+  if(o===1)  return 'Αύριο, '+d.toLocaleDateString('el-GR',{day:'numeric',month:'long'});
+  return d.toLocaleDateString('el-GR',{weekday:'short',day:'numeric',month:'long'});
+}
+function getCurrentData(){
+  const k=getDateKey(currentDayOffset);
+  if(!allData[k]) allData[k]={meals:[]};
+  return allData[k];
+}
+function changeDay(d){
+  currentDayOffset+=d;
+  document.getElementById('current-date').textContent=formatDate(currentDayOffset);
+  renderMeals(); updateSummary();
+}
+document.getElementById('current-date').textContent=formatDate(0);
+
+// ============================================================
+//  TABS
+// ============================================================
+function showTab(name,btn){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  btn.classList.add('active');
+  if(name==='history') renderHistory();
+}
+
+// ============================================================
+//  LIBRE API — mirrors PTST/LibreView-HomeAssistant structure
+// ============================================================
+// ── PROXY CONFIG ──────────────────────────────────────────
+// Αν τρέχεις τοπικά (python -m http.server), άλλαξε σε:
+//   const PROXY_URL = 'http://localhost:3000/proxy';
+// Αν έχεις deploy στο Render, βάλε το URL σου:
+//   const PROXY_URL = 'https://glucosnap-proxy.onrender.com/proxy';
+const PROXY_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:3000/proxy'
+  : 'https://YOUR-PROXY-NAME.onrender.com/proxy'; // <-- άλλαξε μετά το deploy
+
+function getApiUrl(r){ return PROXY_URL; }  // proxy ignores region in URL, uses x-libre-region header
+
+function baseHeaders(token, patientId, accountId){
+  const region = document.getElementById('llu-region')?.value || 'eu2';
+  const h = {
+    'Content-Type':    'application/json',
+    'product':         LLU_PRODUCT,
+    'version':         LLU_VERSION,
+    'Application':     LLU_PRODUCT,
+    'x-libre-region':  region,   // proxy uses this to route to correct LibreView server
+  };
+  if(token)     h['Authorization'] = 'Bearer '+token;
+  if(patientId) h['patientid']     = patientId;
+  if(accountId) h['account-id']    = accountId;
+  return h;
+}
+
+async function sha256hex(str){
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+// LibreLinkApiLogin equivalent
+async function connectLibre(){
+  const email   = document.getElementById('llu-email').value.trim();
+  const pass    = document.getElementById('llu-pass').value;
+  const region  = document.getElementById('llu-region').value;
+  const errEl   = document.getElementById('connect-error');
+  const btn     = document.getElementById('connect-btn');
+  const remember= document.getElementById('remember-me').checked;
+  if(!email||!pass){ errEl.textContent='❌ Συμπλήρωσε email και κωδικό.'; errEl.style.display='block'; return; }
+  btn.disabled=true; btn.textContent='⏳ Σύνδεση...'; errEl.style.display='none';
+  try{
+    const apiUrl=getApiUrl(region);
+    window._libreApiUrl=apiUrl;
+
+    // Step 1 — Login (LibreLinkApiLogin)
+    const lr=await fetch(apiUrl+'/llu/auth/login',{
+      method:'POST', headers:baseHeaders(null,null,null),
+      body:JSON.stringify({email,password:pass})
+    });
+    if(lr.status===401||lr.status===403) throw new Error('Λάθος email ή κωδικός.');
+    if(!lr.ok) throw new Error('HTTP '+lr.status);
+    const ld=await lr.json();
+    if(ld.status===2)         throw new Error('Λάθος credentials (status 2).');
+    if(ld.data?.redirect)     throw new Error('Λάθος region! Δοκίμασε: '+ld.data.region?.toUpperCase());
+    if(ld.data?.step){
+      const m={tou:'Αποδέξου Όρους Χρήσης στο LibreLinkUp app.',pp:'Αποδέξου Πολιτική Απορρήτου στο app.',verifyEmail:'Επαλήθευσε το email σου.'};
+      throw new Error(m[ld.data.step.type]||'Απαιτείται ενέργεια στο app: '+ld.data.step.type);
+    }
+    if(ld.status!==0) throw new Error('API error status '+ld.status);
+
+    libreToken = ld.data.authTicket.token;
+    const userId = ld.data.user.id;
+    const accountId = await sha256hex(userId);
+    window._libreAccountId = accountId;
+
+    if(remember){ saveSettings({email,region}); showToast('✅ Credentials αποθηκεύτηκαν'); }
+
+    // Step 2 — LibreLinkApiClient: GET /llu/connections, sorted by patientId
+    const cr=await fetch(apiUrl+'/llu/connections',{headers:baseHeaders(libreToken,null,accountId)});
+    if(!cr.ok) throw new Error('Connections HTTP '+cr.status);
+    const cd=await cr.json();
+    if(cd.status!==0) throw new Error('Connections error '+cd.status);
+    librePatients=[...(cd.data||[])].sort((a,b)=>(a.patientId||'').localeCompare(b.patientId||''));
+    if(!librePatients.length) throw new Error('Δεν βρέθηκαν patients. Έχεις αποδεχτεί πρόσκληση;');
+
+    document.getElementById('libre-setup').style.display='none';
+    document.getElementById('glucose-live').style.display='block';
+    document.getElementById('live-dot').classList.remove('offline');
+    document.getElementById('live-label').textContent='Συνδεδεμένο';
+    buildPatientSelector();
+    await refreshGlucose();
+    refreshTimer=setInterval(refreshGlucose, 5*60*1000);
+  }catch(err){
+    errEl.textContent='❌ '+err.message; errEl.style.display='block';
+    btn.disabled=false; btn.textContent='🔌 Σύνδεση';
+  }
+}
+
+function buildPatientSelector(){
+  const sel=document.getElementById('patient-selector');
+  if(librePatients.length<=1){sel.innerHTML='';return;}
+  sel.innerHTML=librePatients.map((p,i)=>
+    `<button onclick="selectPatient(${i})" style="padding:4px 12px;border-radius:16px;border:1px solid rgba(255,255,255,0.2);background:${i===0?'rgba(100,200,100,0.22)':'rgba(255,255,255,0.07)'};color:white;cursor:pointer;font-size:0.75rem;">
+      👤 ${p.firstName||'Patient '+(i+1)}
+    </button>`).join('');
+  window._selPatIdx=0;
+}
+function selectPatient(idx){
+  window._selPatIdx=idx;
+  document.querySelectorAll('#patient-selector button').forEach((b,i)=>{
+    b.style.background=i===idx?'rgba(100,200,100,0.22)':'rgba(255,255,255,0.07)';
+  });
+  refreshGlucose();
+}
+
+// LibreLinkGetGraph equivalent
+async function refreshGlucose(){
+  if(!libreToken||!librePatients.length) return;
+  try{
+    const patient  = librePatients[window._selPatIdx||0];
+    const patientId= patient.patientId||patient.id;
+    const apiUrl   = window._libreApiUrl||'https://api.libreview.io';
+    const accountId= window._libreAccountId||'';
+
+    const gr=await fetch(apiUrl+'/llu/connections/'+patientId+'/graph',{
+      headers:baseHeaders(libreToken,patientId,accountId)
+    });
+    if(gr.status===401||gr.status===403){
+      document.getElementById('live-dot').classList.add('offline');
+      document.getElementById('live-label').textContent='Token ληγμένο';
+      return;
+    }
+    if(!gr.ok) throw new Error('Graph HTTP '+gr.status);
+    const gd=await gr.json();
+    if(gd.status!==0) throw new Error('Graph API error '+gd.status);
+
+    const conn    = gd.data.connection;
+    const meas    = conn.glucoseMeasurement;
+    const history = gd.data.graphData||[];
+
+    // Persist to localStorage
+    persistGlucoseReadings(meas, history);
+    updateGlucoseUI(meas, conn, history);
+    updateHbA1c();
+  }catch(err){
+    console.error(err.message);
+    document.getElementById('live-dot').classList.add('offline');
+    document.getElementById('live-label').textContent='Σφάλμα';
+  }
+}
+
+function persistGlucoseReadings(meas, history){
+  const today=getDateKey(0);
+  if(!glucoseDB[today]) glucoseDB[today]=[];
+  const all=[...history, {
+    Timestamp: meas.Timestamp,
+    ValueInMgPerDl: meas.ValueInMgPerDl||meas.Value,
+    TrendArrow: meas.TrendArrow,
+    isHigh: meas.isHigh,
+    isLow: meas.isLow
+  }];
+  all.forEach(r=>{
+    const v=r.ValueInMgPerDl||r.Value;
+    if(!v) return;
+    if(!glucoseDB[today].find(x=>x.ts===r.Timestamp)){
+      glucoseDB[today].push({ts:r.Timestamp,value:v,isHigh:r.isHigh,isLow:r.isLow,trend:r.TrendArrow});
+    }
+  });
+  saveGlucoseDB(glucoseDB);
+}
+
+function updateGlucoseUI(meas, conn, history){
+  const val  = meas.ValueInMgPerDl||meas.Value;
+  const trend= meas.TrendArrow||3;
+  const tLow = conn.targetLow||70;
+  const tHigh= conn.targetHigh||130;
+
+  const ve=document.getElementById('glucose-val');
+  ve.textContent=val;
+  ve.className='glucose-value'+(meas.isHigh?' high':meas.isLow?' low':'');
+  document.getElementById('glucose-trend').textContent=TREND_ARROWS[trend]||'→';
+  document.getElementById('g-low').textContent=tLow;
+  document.getElementById('g-high').textContent=tHigh;
+  if(meas.Timestamp){
+    const d=new Date(meas.Timestamp);
+    document.getElementById('glucose-time').textContent='Τελευταία: '+d.toLocaleTimeString('el-GR',{hour:'2-digit',minute:'2-digit'});
+  }
+
+  const ae=document.getElementById('glucose-alert');
+  ae.style.display='block';
+  if(meas.isHigh){
+    ae.className='glucose-alert high';
+    ae.innerHTML=`<strong>🔴 Υψηλό Σάκχαρο!</strong>${val} mg/dL — πάνω από ${tHigh}. Κίνηση και αποφυγή υδατανθράκων.`;
+    if(!lastAlertedHigh){ addNotification('high',`Υψηλό σάκχαρο: ${val} mg/dL`); lastAlertedHigh=true; lastAlertedLow=false; }
+  } else if(meas.isLow){
+    ae.className='glucose-alert low';
+    ae.innerHTML=`<strong>🔵 Χαμηλό Σάκχαρο!</strong>${val} mg/dL — κάτω από ${tLow}. Πάρε γρήγορα υδατάνθρακες!`;
+    if(!lastAlertedLow){ addNotification('low',`Χαμηλό σάκχαρο: ${val} mg/dL`); lastAlertedLow=true; lastAlertedHigh=false; }
+  } else {
+    ae.className='glucose-alert ok';
+    ae.innerHTML=`<strong>✅ Εντός Ορίων</strong>${val} mg/dL — μεταξύ ${tLow}–${tHigh} mg/dL.`;
+    lastAlertedHigh=false; lastAlertedLow=false;
+  }
+
+  if(history.length>1) drawGlucoseChart(history, tLow, tHigh);
+
+  // Last 8 history rows
+  const recent=[...history].reverse().slice(0,8);
+  document.getElementById('history-list').innerHTML=recent.map(h=>{
+    const hv=h.ValueInMgPerDl||h.Value;
+    const cls=h.isHigh?'high':h.isLow?'low':'ok';
+    const t=new Date(h.Timestamp).toLocaleTimeString('el-GR',{hour:'2-digit',minute:'2-digit'});
+    return`<div class="history-row">
+      <span class="hist-time">${t}</span>
+      <span class="hist-val ${cls}">${hv} <small style="font-size:0.6rem;opacity:0.45">mg/dL</small></span>
+      <span class="hist-trend">${TREND_ARROWS[h.TrendArrow||3]||'→'}</span>
+    </div>`;
+  }).join('');
+
+  document.getElementById('live-dot').classList.remove('offline');
+  document.getElementById('live-label').textContent='Ενεργό';
+}
+
+function drawGlucoseChart(data, low, high){
+  const canvas=document.getElementById('glucoseChart');
+  if(!canvas) return;
+  const ctx=canvas.getContext('2d');
+  canvas.width=canvas.parentElement.offsetWidth||380;
+  canvas.height=105;
+  const W=canvas.width, H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+  const vals=data.map(d=>d.ValueInMgPerDl||d.Value).filter(Boolean);
+  if(vals.length<2) return;
+  const minV=Math.min(...vals,low-10), maxV=Math.max(...vals,high+10);
+  const range=maxV-minV||1;
+  const px=i=>(i/(vals.length-1))*W;
+  const py=v=>H-((v-minV)/range)*H*0.88-H*0.04;
+  // Target zone
+  ctx.fillStyle='rgba(39,174,96,0.09)';
+  ctx.fillRect(0,py(high),W,py(low)-py(high));
+  // Threshold lines
+  ctx.strokeStyle='rgba(255,255,255,0.1)';ctx.lineWidth=1;ctx.setLineDash([3,3]);
+  [low,high].forEach(v=>{ctx.beginPath();ctx.moveTo(0,py(v));ctx.lineTo(W,py(v));ctx.stroke();});
+  ctx.setLineDash([]);
+  // Fill
+  const g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'rgba(110,232,154,0.26)');g.addColorStop(1,'rgba(110,232,154,0)');
+  ctx.beginPath();ctx.moveTo(px(0),py(vals[0]));
+  vals.forEach((v,i)=>ctx.lineTo(px(i),py(v)));
+  ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();ctx.fillStyle=g;ctx.fill();
+  // Line
+  ctx.beginPath();ctx.moveTo(px(0),py(vals[0]));
+  vals.forEach((v,i)=>ctx.lineTo(px(i),py(v)));
+  ctx.strokeStyle='#6ee89a';ctx.lineWidth=2;ctx.stroke();
+}
+
+// ============================================================
+//  HbA1c — Nathan formula (ADA standard)
+//  HbA1c(%) = (avgGlucose_mgdl + 46.7) / 28.7
+// ============================================================
+function calcHbA1c(avgMgdl){ return ((avgMgdl + 46.7) / 28.7).toFixed(1); }
+
+function hba1cClass(v){ const f=parseFloat(v); return f<5.7?'good':f<6.5?'warn':'bad'; }
+function hba1cLabel(v){ const f=parseFloat(v); return f<5.7?'Φυσιολογικό ✅':f<6.5?'Προδιαβήτης ⚠️':'Διαβήτης 🚨'; }
+
+function setHbA1cElements(prefix, hba1c, avg, count){
+  const valEl    = document.getElementById(prefix+'val');
+  const lbEl     = document.getElementById(prefix+'label');
+  const barEl    = document.getElementById(prefix+'bar');
+  const mkEl     = document.getElementById(prefix+'marker');
+  const avgEl    = document.getElementById(prefix+'avg-val');
+  if(avgEl) avgEl.textContent = hba1c ? Math.round(avg)+' mg/dL' : '—';
+  if(!valEl) return;
+  if(!hba1c){
+    valEl.innerHTML='—<span class="hba1c-pct">%</span>';
+    if(lbEl) lbEl.textContent='Χρειάζονται ≥10 μετρήσεις ('+count+' υπάρχουν)';
+    if(barEl){barEl.style.width='0%';}
+    if(mkEl){mkEl.style.left='0%';}
+    return;
+  }
+  const cls=hba1cClass(hba1c);
+  valEl.className='hba1c-val '+cls;
+  valEl.innerHTML=hba1c+'<span class="hba1c-pct">%</span>';
+  if(lbEl) lbEl.textContent=hba1cLabel(hba1c)+' · βάση '+count+' μετρήσεων';
+  const pct=Math.min(Math.max((parseFloat(hba1c)-4)/6*100,0),100);
+  if(barEl){barEl.style.width=pct+'%';barEl.style.background=cls==='good'?'#27ae60':cls==='warn'?'#f39c12':'#e74c3c';}
+  if(mkEl) mkEl.style.left=pct+'%';
+}
+
+function updateHbA1c(){
+  const readings=[];
+  for(let i=0;i<30;i++){
+    const k=getDateKey(-i);
+    if(glucoseDB[k]) glucoseDB[k].forEach(r=>readings.push(r.value));
+  }
+  if(readings.length<10){ setHbA1cElements('hba1c-',null,0,readings.length); return; }
+  const avg=readings.reduce((s,v)=>s+v,0)/readings.length;
+  const hba1c=calcHbA1c(avg);
+  setHbA1cElements('hba1c-', hba1c, avg, readings.length);
+}
+
+function disconnectLibre(){
+  libreToken=null; librePatients=[]; window._libreAccountId=''; window._libreApiUrl=null; window._selPatIdx=0;
+  clearInterval(refreshTimer);
+  document.getElementById('libre-setup').style.display='block';
+  document.getElementById('glucose-live').style.display='none';
+  document.getElementById('connect-btn').disabled=false;
+  document.getElementById('connect-btn').textContent='🔌 Σύνδεση';
+  document.getElementById('connect-error').style.display='none';
+}
+
+// ============================================================
+//  NOTIFICATIONS
+// ============================================================
+function addNotification(type, msg){
+  const now=new Date().toLocaleTimeString('el-GR',{hour:'2-digit',minute:'2-digit'});
+  notifications.unshift({type,msg,time:now,date:new Date().toLocaleDateString('el-GR')});
+  if(notifications.length>50) notifications=notifications.slice(0,50);
+  saveNotifs(notifications); renderNotifications();
+  if(Notification.permission==='granted'){
+    new Notification('GlucoSnap — '+msg,{});
+  }
+}
+function renderNotifications(){
+  const badge=document.getElementById('notif-badge');
+  const cnt=notifications.filter(n=>n.type!=='info').length;
+  if(cnt>0){badge.style.display='flex';badge.textContent=Math.min(cnt,9);}else{badge.style.display='none';}
+  const list=document.getElementById('notif-list');
+  if(!notifications.length){list.innerHTML='<div class="notif-empty">Δεν υπάρχουν ειδοποιήσεις</div>';return;}
+  list.innerHTML=notifications.slice(0,20).map(n=>`
+    <div class="notif-item ${n.type}">
+      <div>${n.type==='high'?'🔴':n.type==='low'?'🔵':'🔔'} ${n.msg}</div>
+      <div class="ni-time">${n.date} · ${n.time}</div>
+    </div>`).join('');
+}
+function clearNotifications(){ notifications=[]; saveNotifs(notifications); renderNotifications(); }
+function toggleNotifPanel(){ document.getElementById('notif-panel').classList.toggle('open'); }
+document.addEventListener('click',e=>{
+  if(!e.target.closest('#notif-panel')&&!e.target.closest('.notif-btn'))
+    document.getElementById('notif-panel').classList.remove('open');
+});
+if(Notification.permission==='default') Notification.requestPermission();
+renderNotifications();
+
+// ============================================================
+//  MEALS
+// ============================================================
+function selectMeal(b){ document.querySelectorAll('.meal-btn').forEach(x=>x.classList.remove('active')); b.classList.add('active'); selectedMealType=b.dataset.meal; }
+function onDrag(e){ e.preventDefault(); document.getElementById('drop-zone').classList.add('drag-over'); }
+function offDrag(){ document.getElementById('drop-zone').classList.remove('drag-over'); }
+function onDrop(e){ e.preventDefault(); offDrag(); const f=e.dataTransfer.files[0]; if(f) loadImageFile(f); }
+function handleFile(e){ const f=e.target.files[0]; if(f) loadImageFile(f); }
+function loadImageFile(file){
+  const r=new FileReader();
+  r.onload=e=>{
+    currentImageB64=e.target.result.split(',')[1];
+    document.getElementById('preview-img').src=e.target.result;
+    document.getElementById('preview-area').style.display='block';
+    document.getElementById('analyze-btn').style.display='block';
+    document.getElementById('result-card').style.display='none';
+  };
+  r.readAsDataURL(file);
+}
+function clearImage(){
+  currentImageB64=null; currentResult=null;
+  document.getElementById('preview-area').style.display='none';
+  document.getElementById('analyze-btn').style.display='none';
+  document.getElementById('result-card').style.display='none';
+  document.getElementById('file-input').value='';
+}
+
+// ============================================================
+//  AI ANALYSIS (Claude Vision)
+// ============================================================
+async function analyzeImage(){
+  if(!currentImageB64) return;
+  const btn=document.getElementById('analyze-btn');
+  btn.disabled=true;
+  document.getElementById('loading').style.display='flex';
+  document.getElementById('result-card').style.display='none';
+  try{
+    const prompt=`Είσαι ειδικός διατροφολόγος για προδιαβήτη. Ανάλυσε τη φωτογραφία φαγητού.
+Απάντησε ΜΟΝΟ με JSON (χωρίς markdown):
+{"name":"ελληνικό όνομα","calories":450,"protein_g":25,"carbs_g":40,"fat_g":18,"fiber_g":4,"gi":55,"gl":22,"gi_category":"low","diabetes_tip":"Σύντομη συμβουλή για προδιαβήτη.","description":"Σύντομη περιγραφή γεύματος."}
+Κανόνες: gi=0-100 ακέραιος, gl=round(gi*carbs_g/100), gi_category: low(≤55)/medium(56-69)/high(≥70)`;
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,
+        messages:[{role:'user',content:[
+          {type:'image',source:{type:'base64',media_type:'image/jpeg',data:currentImageB64}},
+          {type:'text',text:prompt}
+        ]}]})
+    });
+    const data=await resp.json();
+    const text=data.content[0].text.trim();
+    let result;
+    try{result=JSON.parse(text);}catch{const m=text.match(/\{[\s\S]*\}/);result=m?JSON.parse(m[0]):null;}
+    if(!result) throw new Error('Parse failed');
+    currentResult=result;
+    showResult(result);
+  }catch(err){ alert('Σφάλμα ανάλυσης. Δοκίμασε ξανά.'); }
+  finally{ document.getElementById('loading').style.display='none'; btn.disabled=false; }
+}
+
+function giCatLabel(c){ return c==='low'?'Χαμηλός ΓΔ':c==='medium'?'Μέτριος ΓΔ':'Υψηλός ΓΔ'; }
+
+function showResult(r){
+  document.getElementById('r-name').textContent=r.name||'Άγνωστο';
+  document.getElementById('r-cal').innerHTML=`${r.calories} <span>kcal</span>`;
+  document.getElementById('r-prot').textContent=`${r.protein_g}g`;
+  document.getElementById('r-carb').textContent=`${r.carbs_g}g`;
+  document.getElementById('r-fat').textContent=`${r.fat_g}g`;
+  document.getElementById('r-fiber').textContent=`${r.fiber_g||0}g`;
+  const gi=r.gi||0, gl=r.gl||0, cat=r.gi_category||'low';
+  document.getElementById('r-gi-val').textContent=gi;
+  document.getElementById('r-gl-val').textContent=gl;
+  const badge=document.getElementById('r-gi-badge');
+  badge.textContent=giCatLabel(cat); badge.className='gi-badge '+cat;
+  document.getElementById('gi-pointer').style.left=Math.min(Math.max(gi,0),100)+'%';
+  const tip=document.getElementById('r-diabetes-tip');
+  tip.className='diabetes-tip '+(cat==='low'?'ok':cat==='medium'?'caution':'warning');
+  tip.innerHTML=`<strong>${cat==='low'?'✅':cat==='medium'?'⚠️':'🚨'} Συμβουλή Προδιαβήτη</strong>${r.diabetes_tip||''}`;
+  document.getElementById('r-desc').textContent=r.description||'';
+  document.getElementById('result-card').style.display='block';
+}
+
+function addMeal(){
+  if(!currentResult) return;
+  const meal={
+    id:Date.now(), type:selectedMealType, name:currentResult.name,
+    calories:currentResult.calories, protein:currentResult.protein_g,
+    carbs:currentResult.carbs_g, fat:currentResult.fat_g, fiber:currentResult.fiber_g||0,
+    gi:currentResult.gi, gl:currentResult.gl, gi_category:currentResult.gi_category,
+    img:document.getElementById('preview-img').src,
+    time:new Date().toLocaleTimeString('el-GR',{hour:'2-digit',minute:'2-digit'})
+  };
+  getCurrentData().meals.push(meal);
+  saveDB(allData);
+  renderMeals(); updateSummary(); clearImage();
+  document.getElementById('result-card').style.display='none';
+  showToast('✅ '+meal.name+' προστέθηκε');
+}
+
+function deleteMeal(id){
+  getCurrentData().meals=getCurrentData().meals.filter(m=>m.id!==id);
+  saveDB(allData); renderMeals(); updateSummary();
+}
+function clearAll(){
+  if(!confirm('Διαγραφή όλων των γευμάτων;')) return;
+  getCurrentData().meals=[]; saveDB(allData); renderMeals(); updateSummary();
+}
+
+function renderMeals(){
+  const meals=getCurrentData().meals;
+  const makeHtml=ms=>ms.length?ms.map(m=>{
+    const cat=m.gi_category||'low';
+    const lbl=cat==='low'?'ΓΔ Χ':cat==='medium'?'ΓΔ Μ':'ΓΔ Υ';
+    return`<div class="meal-item">
+      ${m.img?`<img class="m-thumb" src="${m.img}" alt="">`:`<div class="m-thumb-ph">${MEAL_EMOJIS[m.type]||'🍽️'}</div>`}
+      <div class="m-info"><div class="m-name">${m.name}</div><div class="m-type">${MEAL_EMOJIS[m.type]||''} ${m.type}${m.time?' · '+m.time:''}</div></div>
+      <div class="m-right"><div class="m-cal">${m.calories} kcal</div><span class="m-gi-pill ${cat}">${lbl} (${m.gi})</span></div>
+      <button class="del-btn" onclick="deleteMeal(${m.id})">🗑</button>
+    </div>`;
+  }).join(''):`<div class="empty-list">🥗 Δεν υπάρχουν γεύματα</div>`;
+  document.getElementById('meals-list').innerHTML=makeHtml(meals);
+  document.getElementById('meals-list2').innerHTML=makeHtml(meals);
+}
+
+function updateSummary(){
+  const meals=getCurrentData().meals;
+  const totCal =meals.reduce((s,m)=>s+m.calories,0);
+  const totProt=meals.reduce((s,m)=>s+(m.protein||0),0);
+  const totCarb=meals.reduce((s,m)=>s+(m.carbs||0),0);
+  const totFat =meals.reduce((s,m)=>s+(m.fat||0),0);
+  const totGL  =meals.reduce((s,m)=>s+(m.gl||0),0);
+  ['','2'].forEach(s=>{
+    document.getElementById('total-cal'+s).textContent=totCal;
+    document.getElementById('total-prot'+s).textContent=Math.round(totProt)+'g';
+    document.getElementById('total-carb'+s).textContent=Math.round(totCarb)+'g';
+    document.getElementById('total-fat'+s).textContent=Math.round(totFat)+'g';
+    document.getElementById('day-gl-total'+s).textContent=Math.round(totGL);
+  });
+  updateRing(totCal);
+  updateGIAlert(totGL, meals.length);
+}
+
+function updateGIAlert(gl, count){
+  const msg=count===0?'Δεν υπάρχουν γεύματα.':gl<80?`✅ ΓΦ ${Math.round(gl)} — ιδανικό!`:gl<120?`⚠️ ΓΦ ${Math.round(gl)} — μέτριο.`:`🚨 ΓΦ ${Math.round(gl)} — υψηλό!`;
+  const cls=count===0||gl<80?'ok':gl<120?'warn':'danger';
+  ['','2'].forEach(s=>{
+    const e=document.getElementById('day-gi-alert'+s);
+    if(e){e.className='gl-day-note '+cls; e.textContent=msg;}
+  });
+}
+
+function updateRing(totCal){
+  const goal=parseInt(document.getElementById('calorie-goal').value)||2000;
+  const pct=Math.min(totCal/goal,1);
+  const circ=2*Math.PI*48;
+  const off=circ*(1-pct);
+  const color=pct<0.7?'#f5a832':pct<1?'#e67e22':'#e74c3c';
+  ['','2'].forEach(s=>{
+    const rf=document.getElementById('ring-fill'+s);
+    if(rf){rf.style.strokeDashoffset=off; rf.style.stroke=color;}
+    const rc=document.getElementById('remaining-cal'+s);
+    if(rc) rc.textContent=Math.max(goal-totCal,0)+' kcal';
+  });
+}
+function updateRingFromGoal(){ updateRing(parseInt(document.getElementById('total-cal').textContent)||0); }
+function syncGoal(el){
+  document.getElementById('calorie-goal').value=el.value;
+  document.getElementById('calorie-goal2').value=el.value;
+  updateRingFromGoal();
+}
+
+// ============================================================
+//  HISTORY TAB
+// ============================================================
+function setHistRange(days, btn){
+  histRange=days;
+  document.querySelectorAll('.hist-ctrl-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderHistory();
+}
+
+function renderHistory(){
+  const days=[];
+  for(let i=histRange-1;i>=0;i--) days.push(getDateKey(-i));
+
+  // Glucose data per day
+  const glucAvgs=[], glucMins=[], glucMaxs=[], glucLabels=[];
+  let allVals=[], inRange=0, above=0, below=0;
+  const tLow=70, tHigh=130;
+
+  days.forEach(k=>{
+    glucLabels.push(k.slice(5)); // MM-DD
+    const readings=glucoseDB[k]||[];
+    if(readings.length){
+      const vals=readings.map(r=>r.value);
+      glucAvgs.push(Math.round(vals.reduce((s,v)=>s+v,0)/vals.length));
+      glucMins.push(Math.min(...vals));
+      glucMaxs.push(Math.max(...vals));
+      allVals=[...allVals,...vals];
+      readings.forEach(r=>{
+        if(r.value>tHigh) above++;
+        else if(r.value<tLow) below++;
+        else inRange++;
+      });
+    } else { glucAvgs.push(null); glucMins.push(null); glucMaxs.push(null); }
+  });
+
+  // Calorie / GL data per day
+  const calVals=[], glVals=[];
+  days.forEach(k=>{
+    const d=allData[k];
+    if(d?.meals?.length){
+      calVals.push(d.meals.reduce((s,m)=>s+m.calories,0));
+      glVals.push(Math.round(d.meals.reduce((s,m)=>s+(m.gl||0),0)));
+    } else { calVals.push(0); glVals.push(0); }
+  });
+
+  // Draw charts
+  requestAnimationFrame(()=>{
+    drawHistGlucose(glucLabels, glucAvgs, glucMins, glucMaxs);
+    drawHistCal(glucLabels, calVals, glVals);
+  });
+
+  // Update stats
+  updateHistStats(allVals, calVals, glVals, inRange, above, below);
+
+  // Timeline for today
+  renderTimeline(getDateKey(0));
+  document.getElementById('tl-date-label').textContent=new Date().toLocaleDateString('el-GR',{day:'numeric',month:'long'});
+}
+
+// Big glucose history chart
+function drawHistGlucose(labels, avgs, mins, maxs){
+  const canvas=document.getElementById('histGlucoseChart');
+  if(!canvas) return;
+  const ctx=canvas.getContext('2d');
+  canvas.width=canvas.parentElement.offsetWidth||680;
+  canvas.height=190;
+  const W=canvas.width, H=canvas.height;
+  const PAD={t:8,r:12,b:28,l:38};
+  const cW=W-PAD.l-PAD.r, cH=H-PAD.t-PAD.b;
+  ctx.clearRect(0,0,W,H);
+
+  const all=[...avgs,...mins,...maxs].filter(v=>v!==null);
+  if(!all.length){
+    ctx.fillStyle='#bbb';ctx.font='13px DM Sans';ctx.textAlign='center';
+    ctx.fillText('Δεν υπάρχουν δεδομένα σακχάρου',W/2,H/2); return;
+  }
+  const minV=Math.min(...all,55), maxV=Math.max(...all,185);
+  const range=maxV-minV||1;
+  const px=i=>PAD.l+i/(labels.length-1||1)*cW;
+  const py=v=>PAD.t+cH-(v-minV)/range*cH;
+
+  // Grid lines
+  ctx.strokeStyle='rgba(0,0,0,0.055)';ctx.lineWidth=1;
+  [70,100,130,160,180].forEach(v=>{
+    if(v<minV||v>maxV) return;
+    ctx.beginPath();ctx.moveTo(PAD.l,py(v));ctx.lineTo(W-PAD.r,py(v));ctx.stroke();
+    ctx.fillStyle='#bbb';ctx.font='9px DM Sans';ctx.textAlign='right';
+    ctx.fillText(v,PAD.l-3,py(v)+3);
+  });
+
+  // Target zone
+  ctx.fillStyle='rgba(39,174,96,0.07)';
+  ctx.fillRect(PAD.l,py(130),cW,py(70)-py(130));
+
+  // Min-max band
+  const vi=avgs.map((v,i)=>v!==null?i:-1).filter(i=>i>=0);
+  if(vi.length>1){
+    ctx.beginPath();
+    ctx.moveTo(px(vi[0]),py(maxs[vi[0]]));
+    vi.forEach(i=>ctx.lineTo(px(i),py(maxs[i])));
+    vi.slice().reverse().forEach(i=>ctx.lineTo(px(i),py(mins[i])));
+    ctx.closePath();ctx.fillStyle='rgba(212,131,26,0.09)';ctx.fill();
+  }
+
+  // Average line
+  ctx.beginPath();let first=true;
+  avgs.forEach((v,i)=>{
+    if(v===null){first=true;return;}
+    if(first){ctx.moveTo(px(i),py(v));first=false;}else ctx.lineTo(px(i),py(v));
+  });
+  ctx.strokeStyle='#d4831a';ctx.lineWidth=2.5;ctx.stroke();
+
+  // Dots
+  avgs.forEach((v,i)=>{
+    if(v===null) return;
+    ctx.beginPath();ctx.arc(px(i),py(v),4,0,Math.PI*2);
+    ctx.fillStyle=v>130?'#e74c3c':v<70?'#3498db':'#27ae60';ctx.fill();
+    ctx.strokeStyle='white';ctx.lineWidth=1.5;ctx.stroke();
+  });
+
+  // X labels
+  ctx.fillStyle='#aaa';ctx.font='9px DM Sans';ctx.textAlign='center';
+  const step=Math.max(1,Math.floor(labels.length/8));
+  labels.forEach((l,i)=>{if(i%step===0) ctx.fillText(l,px(i),H-4);});
+}
+
+// Calorie + GL bar chart
+function drawHistCal(labels, calVals, glVals){
+  const canvas=document.getElementById('histCalChart');
+  if(!canvas) return;
+  const ctx=canvas.getContext('2d');
+  canvas.width=canvas.parentElement.offsetWidth||680;
+  canvas.height=130;
+  const W=canvas.width, H=canvas.height;
+  const PAD={t:8,r:12,b:26,l:38};
+  const cW=W-PAD.l-PAD.r, cH=H-PAD.t-PAD.b;
+  ctx.clearRect(0,0,W,H);
+
+  const maxCal=Math.max(...calVals,100);
+  const bw=Math.max(2,(cW/labels.length)*0.45);
+  const px=i=>PAD.l+(i+0.5)*(cW/labels.length);
+
+  // Cal bars
+  calVals.forEach((v,i)=>{
+    if(!v) return;
+    const bh=(v/maxCal)*cH;
+    ctx.fillStyle='rgba(212,131,26,0.65)';
+    ctx.beginPath();
+    const x=px(i)-bw/2,y=PAD.t+cH-bh;
+    ctx.roundRect(x,y,bw,bh,3);ctx.fill();
+  });
+
+  // GL line
+  const maxGL=Math.max(...glVals,10);
+  ctx.beginPath();let first2=true;
+  glVals.forEach((v,i)=>{
+    if(!v){first2=true;return;}
+    const y=PAD.t+cH-(v/maxGL)*cH*0.9;
+    if(first2){ctx.moveTo(px(i),y);first2=false;}else ctx.lineTo(px(i),y);
+  });
+  ctx.strokeStyle='#3498db';ctx.lineWidth=2;ctx.stroke();
+
+  // Legend
+  ctx.fillStyle='rgba(212,131,26,0.65)';ctx.fillRect(W-90,6,10,8);
+  ctx.fillStyle='#888';ctx.font='9px DM Sans';ctx.textAlign='left';ctx.fillText('kcal',W-77,13);
+  ctx.strokeStyle='#3498db';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(W-55,10);ctx.lineTo(W-45,10);ctx.stroke();
+  ctx.fillText('ΓΦ',W-42,13);
+
+  // X labels
+  ctx.fillStyle='#aaa';ctx.font='9px DM Sans';ctx.textAlign='center';
+  const step=Math.max(1,Math.floor(labels.length/8));
+  labels.forEach((l,i)=>{if(i%step===0) ctx.fillText(l,px(i),H-4);});
+}
+
+function updateHistStats(allVals, calVals, glVals, inRange, above, below){
+  const total=inRange+above+below;
+  document.getElementById('st-avg').textContent=allVals.length?Math.round(allVals.reduce((s,v)=>s+v,0)/allVals.length)+' mg/dL':'—';
+  document.getElementById('st-max').textContent=allVals.length?Math.max(...allVals)+' mg/dL':'—';
+  document.getElementById('st-min').textContent=allVals.length?Math.min(...allVals)+' mg/dL':'—';
+  document.getElementById('st-tir').textContent=total?Math.round(inRange/total*100)+'%':'—';
+  document.getElementById('st-above').textContent=total?Math.round(above/total*100)+'%':'—';
+  document.getElementById('st-below').textContent=total?Math.round(below/total*100)+'%':'—';
+
+  const daysWithCal=calVals.filter(v=>v>0).length;
+  document.getElementById('st-cal').textContent=daysWithCal?Math.round(calVals.filter(v=>v>0).reduce((s,v)=>s+v,0)/daysWithCal)+' kcal':'—';
+  document.getElementById('st-gl').textContent=daysWithCal?Math.round(glVals.filter(v=>v>0).reduce((s,v)=>s+v,0)/Math.max(glVals.filter(v=>v>0).length,1)):'—';
+  const allMeals=Object.values(allData).reduce((s,d)=>s+(d?.meals?.length||0),0);
+  document.getElementById('st-meals').textContent=allMeals;
+  const glOkDays=glVals.filter(v=>v>0&&v<=80).length;
+  document.getElementById('st-gl-ok').textContent=daysWithCal?Math.round(glOkDays/daysWithCal*100)+'%':'—';
+
+  // HbA1c for history sidebar
+  if(allVals.length>=10){
+    const avg=allVals.reduce((s,v)=>s+v,0)/allVals.length;
+    const hba1c=calcHbA1c(avg);
+    const cls=hba1cClass(hba1c);
+    const bigEl=document.getElementById('st-hba1c-big');
+    const lbEl=document.getElementById('st-hba1c-label');
+    const barEl=document.getElementById('st-hba1c-bar');
+    const mkEl=document.getElementById('st-hba1c-marker');
+    if(bigEl){bigEl.className='hba1c-val '+cls;bigEl.innerHTML=hba1c+'<span class="hba1c-pct">%</span>';}
+    if(lbEl) lbEl.textContent=hba1cLabel(hba1c)+' · '+allVals.length+' μετρήσεις';
+    const pct=Math.min(Math.max((parseFloat(hba1c)-4)/6*100,0),100);
+    if(barEl){barEl.style.width=pct+'%';barEl.style.background=cls==='good'?'#27ae60':cls==='warn'?'#f39c12':'#e74c3c';}
+    if(mkEl) mkEl.style.left=pct+'%';
+  }
+}
+
+// Timeline: merge meals + glucose readings for a day
+function renderTimeline(dateKey){
+  if(!dateKey) dateKey=getDateKey(0);
+  const meals=(allData[dateKey]?.meals||[]).map(m=>({type:'meal',time:m.time,name:m.name,cal:m.calories,gi_cat:m.gi_category}));
+  const glu=(glucoseDB[dateKey]||[]).slice(-24).map(r=>{
+    const t=new Date(r.ts).toLocaleTimeString('el-GR',{hour:'2-digit',minute:'2-digit'});
+    return{type:'glucose',time:t,value:r.value,isHigh:r.isHigh,isLow:r.isLow};
+  });
+
+  const all=[...meals,...glu].filter(e=>e.time).sort((a,b)=>a.time.localeCompare(b.time));
+  const tl=document.getElementById('timeline-view');
+  if(!all.length){tl.innerHTML='<div class="tl-empty">Δεν υπάρχουν δεδομένα για αυτή τη μέρα</div>';return;}
+
+  tl.innerHTML=all.map(e=>{
+    if(e.type==='meal'){
+      return`<div class="tl-item">
+        <span class="tl-time">${e.time}</span>
+        <span class="tl-event">🍽️ <strong>${e.name}</strong> · ${e.cal} kcal</span>
+        <span class="tl-badge meal-b">${MEAL_EMOJIS[e.type]||'🍽️'} ${e.gi_cat==='low'?'ΓΔ Χ':e.gi_cat==='medium'?'ΓΔ Μ':'ΓΔ Υ'}</span>
+      </div>`;
+    } else {
+      const cls=e.isHigh?'high-b':e.isLow?'low-b':'ok-b';
+      const lbl=e.isHigh?'Υψηλό':e.isLow?'Χαμηλό':'ΟΚ';
+      return`<div class="tl-item">
+        <span class="tl-time">${e.time}</span>
+        <span class="tl-event">🩸 Σάκχαρο <strong>${e.value} mg/dL</strong></span>
+        <span class="tl-badge glucose-b ${cls}">${lbl}</span>
+      </div>`;
+    }
+  }).join('');
+}
+
+// ============================================================
+//  EXPORT CSV
+// ============================================================
+function exportCSV(){
+  const lines=['Ημερομηνία,Ώρα,Τύπος,Περιγραφή,Τιμή,Μονάδα,ΓΔ,ΓΦ,Θερμίδες'];
+
+  // Glucose readings
+  Object.entries(glucoseDB).sort().forEach(([date,readings])=>{
+    readings.forEach(r=>{
+      const t=r.ts?new Date(r.ts).toLocaleTimeString('el-GR',{hour:'2-digit',minute:'2-digit'}):'';
+      lines.push(`${date},${t},Σάκχαρο,CGM Reading,${r.value},mg/dL,,,`);
+    });
+  });
+
+  // Meals
+  Object.entries(allData).sort().forEach(([date,data])=>{
+    (data.meals||[]).forEach(m=>{
+      lines.push(`${date},${m.time||''},Γεύμα,"${m.name.replace(/"/g,"'")}",${m.calories},kcal,${m.gi||''},${m.gl||''},${m.calories}`);
+    });
+  });
+
+  const blob=new Blob(['\uFEFF'+lines.join('\n')],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download='glucosnap_export_'+new Date().toISOString().split('T')[0]+'.csv';
+  a.click(); URL.revokeObjectURL(url);
+  showToast('📥 CSV αποθηκεύτηκε');
+}
+
+// ============================================================
+//  TOAST
+// ============================================================
+function showToast(msg){
+  const old=document.querySelector('.toast');
+  if(old) old.remove();
+  const t=document.createElement('div');
+  t.className='toast'; t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),3000);
+}
+
+// ============================================================
+//  INIT
+// ============================================================
+renderMeals();
+updateSummary();
+updateHbA1c();
+</script>
+</body>
+</html>
