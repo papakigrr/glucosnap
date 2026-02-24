@@ -233,6 +233,13 @@ canvas.gchart{width:100%;height:100%;}
 .r-desc{font-size:0.76rem;opacity:0.6;line-height:1.5;border-top:1px solid rgba(255,255,255,0.1);padding-top:8px;}
 .add-meal-btn{margin-top:10px;width:100%;padding:10px;background:rgba(255,255,255,0.11);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:white;font-family:'DM Sans';font-size:0.82rem;font-weight:600;cursor:pointer;}
 .add-meal-btn:hover{background:rgba(255,255,255,0.18);}
+.manual-override{margin-top:10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:11px;}
+.manual-override label{font-size:0.68rem;text-transform:uppercase;letter-spacing:0.6px;color:rgba(255,255,255,0.42);display:block;margin-bottom:6px;}
+.manual-input{width:100%;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.18);border-radius:8px;color:white;padding:8px 11px;font-family:'DM Sans';font-size:0.85rem;}
+.manual-input:focus{outline:none;border-color:#a8d5a2;}
+.manual-input::placeholder{color:rgba(255,255,255,0.28);}
+.reanalyze-btn{margin-top:7px;width:100%;padding:8px;background:rgba(168,213,162,0.15);border:1px solid rgba(168,213,162,0.25);border-radius:8px;color:#a8d5a2;font-family:'DM Sans';font-size:0.8rem;font-weight:600;cursor:pointer;}
+.reanalyze-btn:hover{background:rgba(168,213,162,0.25);}
 
 /* HISTORY TAB */
 .hist-controls{display:flex;gap:9px;margin-bottom:18px;flex-wrap:wrap;align-items:center;}
@@ -560,6 +567,11 @@ onAuthStateChanged(auth, async (user) => {
           </div>
           <div class="diabetes-tip ok" id="r-diabetes-tip"></div>
           <div class="r-desc" id="r-desc"></div>
+          <div class="manual-override">
+            <label>✏️ Διόρθωση τροφίμου</label>
+            <input type="text" class="manual-input" id="manual-food-name" placeholder="π.χ. Φασολάδα, Μπριζόλα, Σαλάτα...">
+            <button class="reanalyze-btn" onclick="reanalyzeWithName()">🔄 Επανανάλυση με αυτό το τρόφιμο</button>
+          </div>
           <button class="add-meal-btn" onclick="addMeal()">+ Προσθήκη στη Μέρα</button>
         </div>
       </div>
@@ -1236,6 +1248,51 @@ function showResult(r){
   tip.innerHTML=`<strong>${cat==='low'?'✅':cat==='medium'?'⚠️':'🚨'} Συμβουλή Προδιαβήτη</strong>${r.diabetes_tip||''}`;
   document.getElementById('r-desc').textContent=r.description||'';
   document.getElementById('result-card').style.display='block';
+}
+
+async function reanalyzeWithName(){
+  const name = document.getElementById('manual-food-name').value.trim();
+  if(!name){ showToast('Γράψε πρώτα το όνομα τροφίμου'); return; }
+  if(!currentImageB64){ showToast('Δεν υπάρχει εικόνα'); return; }
+
+  const btn = document.querySelector('.reanalyze-btn');
+  btn.disabled = true; btn.textContent = '⏳ Αναλύω...';
+  document.getElementById('result-card').style.display='none';
+  document.getElementById('loading').style.display='flex';
+
+  try {
+    const ANTHROPIC_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:3000/anthropic/v1/messages'
+      : 'https://glucosnap-proxy.onrender.com/anthropic/v1/messages';
+
+    const prompt = `Είσαι ειδικός διατροφολόγος. Το τρόφιμο στη φωτογραφία είναι: "${name}". Υπολόγισε τα διατροφικά στοιχεία για την ποσότητα που φαίνεται. Απάντησε ΜΟΝΟ με JSON (χωρίς markdown):
+{"name":"${name}","calories":0,"protein_g":0,"carbs_g":0,"fat_g":0,"fiber_g":0,"gi":0,"gl":0,"gi_category":"low","diabetes_tip":"Σύντομη συμβουλή για προδιαβήτη.","description":"Σύντομη περιγραφή."}
+Κανόνες: gi=0-100 ακέραιος, gl=round(gi*carbs_g/100), gi_category: low(≤55)/medium(56-69)/high(≥70)`;
+
+    const resp = await fetch(ANTHROPIC_URL, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({model:'claude-sonnet-4-5-20250929', max_tokens:1000, temperature:0,
+        messages:[{role:'user',content:[
+          {type:'image',source:{type:'base64',media_type:'image/jpeg',data:currentImageB64}},
+          {type:'text',text:prompt}
+        ]}]})
+    });
+    const data = await resp.json();
+    if(!data.content) throw new Error("API: "+JSON.stringify(data).slice(0,200));
+    const text = data.content[0].text.trim();
+    let result;
+    try{ result=JSON.parse(text); } catch{ const m=text.match(/\{[\s\S]*\}/); result=m?JSON.parse(m[0]):null; }
+    if(!result) throw new Error('Parse failed');
+    currentResult = result;
+    showResult(result);
+    showToast('✅ Επανανάλυση ολοκληρώθηκε!');
+  } catch(err) {
+    showToast('❌ Σφάλμα: ' + err.message);
+  } finally {
+    document.getElementById('loading').style.display='none';
+    btn.disabled = false; btn.textContent = '🔄 Επανανάλυση με αυτό το τρόφιμο';
+    document.getElementById('result-card').style.display='block';
+  }
 }
 
 function addMeal(){
