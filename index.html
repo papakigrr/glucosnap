@@ -770,7 +770,7 @@ async function refreshGlucose(){
   try{
     const patient  = librePatients[window._selPatIdx||0];
     const patientId= patient.patientId||patient.id;
-    const apiUrl   = window._libreApiUrl||'https://api.libreview.io';
+    const apiUrl   = PROXY_URL;
     const accountId= window._libreAccountId||'';
 
     const gr=await fetch(apiUrl+'/llu/connections/'+patientId+'/graph',{
