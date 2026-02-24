@@ -24,6 +24,17 @@ header{background:var(--dark-brown);padding:14px 28px;display:flex;align-items:c
 .date-nav button{background:none;border:none;color:var(--amber-light);font-size:1.1rem;cursor:pointer;padding:2px 5px;border-radius:50%;}
 #current-date{color:white;font-weight:500;font-size:0.85rem;min-width:145px;text-align:center;}
 .notif-btn{background:none;border:1px solid rgba(255,255,255,0.18);border-radius:50%;width:33px;height:33px;color:white;cursor:pointer;font-size:0.9rem;display:flex;align-items:center;justify-content:center;position:relative;flex-shrink:0;}
+
+/* User menu */
+.user-menu{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.08);border-radius:50px;padding:4px 12px 4px 4px;cursor:pointer;position:relative;}
+.user-menu:hover{background:rgba(255,255,255,0.13);}
+.user-avatar{width:26px;height:26px;border-radius:50%;object-fit:cover;background:var(--amber);}
+.user-name-short{font-size:0.75rem;color:rgba(255,255,255,0.8);max-width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.user-dropdown{position:absolute;top:calc(100%+8px);right:0;background:white;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.18);min-width:180px;z-index:200;display:none;border:1px solid var(--border);}
+.user-dropdown.open{display:block;}
+.user-dropdown-item{padding:11px 16px;font-size:0.82rem;color:var(--charcoal);cursor:pointer;border-bottom:1px solid var(--border);}
+.user-dropdown-item:last-child{border-bottom:none;color:#e74c3c;}
+.user-dropdown-item:hover{background:#f9f5f0;}
 .notif-badge{position:absolute;top:-4px;right:-4px;background:#e74c3c;color:white;border-radius:50%;width:14px;height:14px;font-size:0.58rem;display:none;align-items:center;justify-content:center;font-weight:700;}
 
 .tabs{background:white;border-bottom:1px solid var(--border);display:flex;max-width:1280px;margin:0 auto;padding:0 22px;}
@@ -286,14 +297,94 @@ canvas.smallchart{width:100%;height:130px;display:block;}
   .tabs{overflow-x:auto;}.tab-btn{padding:10px 14px;font-size:0.8rem;}
 }
 </style>
+<script type="module">
+// ── Firebase SDK ──────────────────────────────────────────
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAbpafYX_TW9KuP5vDLcymGJtSvmzFuvuQ",
+  authDomain: "glucosnap-28577.firebaseapp.com",
+  projectId: "glucosnap-28577",
+  storageBucket: "glucosnap-28577.firebasestorage.app",
+  messagingSenderId: "21614543376",
+  appId: "1:21614543376:web:450c54fdaac5ff8fd14095"
+};
+
+const fbApp  = initializeApp(firebaseConfig);
+const auth   = getAuth(fbApp);
+const db     = getFirestore(fbApp);
+window._fbAuth = auth;
+window._fbDb   = db;
+window._fbDoc  = doc;
+window._fbGetDoc = getDoc;
+window._fbSetDoc = setDoc;
+window._fbUpdateDoc = updateDoc;
+window._fbCollection = collection;
+window._fbGetDocs = getDocs;
+window._GoogleAuthProvider = GoogleAuthProvider;
+window._signInWithPopup = signInWithPopup;
+window._signOut = signOut;
+window._onAuthStateChanged = onAuthStateChanged;
+window._firebaseReady = true;
+
+// Auth state listener
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    window._currentUser = user;
+    document.getElementById('auth-overlay').style.display = 'none';
+    document.getElementById('app-shell').style.display = 'block';
+    document.getElementById('user-avatar').src = user.photoURL || '';
+    document.getElementById('user-name').textContent = user.displayName || user.email;
+    await window.loadUserData(user.uid);
+  } else {
+    window._currentUser = null;
+    document.getElementById('auth-overlay').style.display = 'flex';
+    document.getElementById('app-shell').style.display = 'none';
+  }
+});
+</script>
 </head>
 <body>
 
+<!-- ===== AUTH OVERLAY ===== -->
+<div id="auth-overlay" style="display:flex;position:fixed;inset:0;z-index:1000;background:linear-gradient(135deg,#1a0a00,#2d1f0e,#0d1b0e);align-items:center;justify-content:center;flex-direction:column;gap:24px;">
+  <div style="text-align:center;">
+    <div style="font-family:'Playfair Display',serif;font-size:3rem;font-weight:900;color:#f5a832;">Gluco<span style="color:white;">Snap</span></div>
+    <div style="font-size:0.75rem;color:rgba(255,255,255,0.38);letter-spacing:2px;text-transform:uppercase;margin-top:4px;">Σάκχαρο · Θερμίδες · Προδιαβήτης</div>
+  </div>
+  <div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:32px 36px;text-align:center;max-width:340px;width:90%;">
+    <div style="font-size:2rem;margin-bottom:12px;">🩸</div>
+    <div style="color:white;font-size:1.1rem;font-weight:600;margin-bottom:6px;">Καλώς ήρθες</div>
+    <div style="color:rgba(255,255,255,0.5);font-size:0.82rem;margin-bottom:24px;line-height:1.5;">Σύνδεσε τον Google λογαριασμό σου για να αποθηκεύσεις τα δεδομένα σου.</div>
+    <button onclick="googleLogin()" style="width:100%;padding:13px;background:white;border:none;border-radius:12px;font-family:'DM Sans';font-size:0.92rem;font-weight:600;color:#1a1a1a;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all 0.2s;box-shadow:0 4px 14px rgba(0,0,0,0.3);">
+      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.8 7.8 0 002.38-5.88c0-.57-.05-.66-.15-1.18z"/><path fill="#34A853" d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2a4.8 4.8 0 01-7.18-2.54H1.83v2.07A8 8 0 008.98 17z"/><path fill="#FBBC05" d="M4.5 10.52a4.8 4.8 0 010-3.04V5.41H1.83a8 8 0 000 7.18l2.67-2.07z"/><path fill="#EA4335" d="M8.98 4.18c1.17 0 2.23.4 3.06 1.2l2.3-2.3A8 8 0 001.83 5.4L4.5 7.49a4.77 4.77 0 014.48-3.3z"/></svg>
+      Σύνδεση με Google
+    </button>
+    <div id="auth-error" style="margin-top:10px;font-size:0.75rem;color:#ff8a80;display:none;"></div>
+  </div>
+  <div style="font-size:0.65rem;color:rgba(255,255,255,0.25);text-align:center;max-width:280px;line-height:1.5;">Τα δεδομένα σου αποθηκεύονται με ασφάλεια στο Firebase της Google.</div>
+</div>
+
+<!-- ===== APP SHELL ===== -->
+<div id="app-shell" style="display:none;">
 <header>
   <div class="logo">Gluco<span>Snap</span>
     <span class="logo-sub">Σάκχαρο · Θερμίδες · Προδιαβήτης</span>
   </div>
   <div class="header-right">
+    <div class="user-menu" onclick="toggleUserDropdown()">
+      <img class="user-avatar" id="user-avatar" src="" alt="">
+      <span class="user-name-short" id="user-name">—</span>
+      <span style="color:rgba(255,255,255,0.5);font-size:0.7rem;">▾</span>
+      <div class="user-dropdown" id="user-dropdown">
+        <div class="user-dropdown-item" onclick="showUserInfo()">👤 Ο λογαριασμός μου</div>
+        <div class="user-dropdown-item" onclick="googleLogout()">🚪 Αποσύνδεση</div>
+      </div>
+    </div>
     <div class="date-nav">
       <button onclick="changeDay(-1)">‹</button>
       <div id="current-date"></div>
@@ -580,28 +671,87 @@ const TREND_ARROWS = {1:'↓↓',2:'↓',3:'→',4:'↑',5:'↑↑'};
 const MEAL_EMOJIS  = {'Πρωινό':'🌅','Μεσημεριανό':'☀️','Βραδινό':'🌙','Σνακ':'🍎'};
 
 // ============================================================
-//  PERSISTENCE — localStorage
+//  PERSISTENCE — Firebase Firestore (ανά χρήστη)
 // ============================================================
-const DB_KEY       = 'glucosnap_meals_v4';
-const GLUCOSE_KEY  = 'glucosnap_glucose_v4';
-const NOTIF_KEY    = 'glucosnap_notifs_v4';
-const SETTINGS_KEY = 'glucosnap_settings_v4';
+// Local cache — φορτώνεται από Firestore κατά το login
+let allData    = {};
+let glucoseDB  = {};
+let notifications = [];
 
-function loadDB(){ try{ return JSON.parse(localStorage.getItem(DB_KEY)||'{}'); } catch{ return {}; } }
-function saveDB(db){ localStorage.setItem(DB_KEY, JSON.stringify(db)); }
-function loadGlucoseDB(){ try{ return JSON.parse(localStorage.getItem(GLUCOSE_KEY)||'{}'); } catch{ return {}; } }
-function saveGlucoseDB(db){ localStorage.setItem(GLUCOSE_KEY, JSON.stringify(db)); }
-function loadSettings(){ try{ return JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}'); } catch{ return {}; } }
-function saveSettings(s){ localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); }
-function loadNotifs(){ try{ return JSON.parse(localStorage.getItem(NOTIF_KEY)||'[]'); } catch{ return []; } }
-function saveNotifs(n){ localStorage.setItem(NOTIF_KEY, JSON.stringify(n)); }
+// Firestore helpers
+function uid(){ return window._currentUser?.uid; }
+
+async function saveDB(db){
+  allData = db;
+  if(!uid()) return;
+  try {
+    const d = window._fbDoc(window._fbDb, 'users', uid());
+    await window._fbSetDoc(d, { meals: db }, { merge: true });
+  } catch(e){ console.warn('saveDB error', e); }
+}
+
+async function saveGlucoseDB(db){
+  glucoseDB = db;
+  if(!uid()) return;
+  try {
+    const d = window._fbDoc(window._fbDb, 'users', uid());
+    await window._fbSetDoc(d, { glucose: db }, { merge: true });
+  } catch(e){ console.warn('saveGlucoseDB error', e); }
+}
+
+async function saveSettings(s){
+  if(!uid()) return;
+  try {
+    const d = window._fbDoc(window._fbDb, 'users', uid());
+    await window._fbSetDoc(d, { settings: s }, { merge: true });
+  } catch(e){ console.warn('saveSettings error', e); }
+}
+
+function loadSettings(){
+  return window._cachedSettings || {};
+}
+
+async function saveNotifs(n){
+  notifications = n;
+  if(!uid()) return;
+  try {
+    const d = window._fbDoc(window._fbDb, 'users', uid());
+    await window._fbSetDoc(d, { notifications: n.slice(0,50) }, { merge: true });
+  } catch(e){ console.warn('saveNotifs error', e); }
+}
+
+// Load all user data from Firestore
+window.loadUserData = async function(userId) {
+  try {
+    const d = window._fbDoc(window._fbDb, 'users', userId);
+    const snap = await window._fbGetDoc(d);
+    if (snap.exists()) {
+      const data = snap.data();
+      allData    = data.meals        || {};
+      glucoseDB  = data.glucose      || {};
+      notifications = data.notifications || [];
+      window._cachedSettings = data.settings || {};
+      // Restore LibreView credentials
+      const s = window._cachedSettings;
+      if(s.email)  document.getElementById('llu-email').value  = s.email;
+      if(s.region !== undefined) document.getElementById('llu-region').value = s.region;
+    }
+    renderMeals();
+    updateSummary();
+    updateHbA1c();
+    renderNotifications();
+    showToast('👋 Καλώς ήρθες!');
+  } catch(e) {
+    console.warn('loadUserData error', e);
+    allData = {}; glucoseDB = {}; notifications = [];
+    renderMeals(); updateSummary();
+  }
+};
 
 // ============================================================
 //  STATE
 // ============================================================
 let currentDayOffset = 0;
-let allData          = loadDB();
-let glucoseDB        = loadGlucoseDB();
 let libreToken       = null;
 let librePatients    = [];
 let selectedMealType = 'Πρωινό';
@@ -609,14 +759,8 @@ let currentImageB64  = null;
 let currentResult    = null;
 let refreshTimer     = null;
 let histRange        = 7;
-let notifications    = loadNotifs();
 let lastAlertedHigh  = false;
 let lastAlertedLow   = false;
-
-// Restore saved credentials
-const _cfg = loadSettings();
-if(_cfg.email)  document.getElementById('llu-email').value  = _cfg.email;
-if(_cfg.region !== undefined) document.getElementById('llu-region').value = _cfg.region;
 
 // ============================================================
 //  DATE HELPERS
@@ -1466,11 +1610,49 @@ function showToast(msg){
 }
 
 // ============================================================
+//  AUTH
+// ============================================================
+async function googleLogin(){
+  const errEl = document.getElementById('auth-error');
+  try {
+    const provider = new window._GoogleAuthProvider();
+    await window._signInWithPopup(window._fbAuth, provider);
+    // onAuthStateChanged handles the rest
+  } catch(e) {
+    errEl.textContent = '❌ ' + e.message;
+    errEl.style.display = 'block';
+  }
+}
+
+async function googleLogout(){
+  await window._signOut(window._fbAuth);
+  allData = {}; glucoseDB = {}; notifications = [];
+  libreToken = null; librePatients = [];
+  clearInterval(refreshTimer);
+  showToast('👋 Αποσυνδέθηκες');
+}
+
+function toggleUserDropdown(){
+  document.getElementById('user-dropdown').classList.toggle('open');
+}
+
+function showUserInfo(){
+  const u = window._currentUser;
+  if(u) showToast('👤 ' + (u.displayName||u.email));
+  document.getElementById('user-dropdown').classList.remove('open');
+}
+
+document.addEventListener('click', e => {
+  if(!e.target.closest('.user-menu'))
+    document.getElementById('user-dropdown')?.classList.remove('open');
+});
+
+// ============================================================
 //  INIT
 // ============================================================
-renderMeals();
-updateSummary();
-updateHbA1c();
+// Data loaded in loadUserData() after auth
+
 </script>
+</div><!-- end app-shell -->
 </body>
 </html>
