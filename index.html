@@ -1047,13 +1047,14 @@ async function analyzeImage(){
         ]}]})
     });
     const data=await resp.json();
+    if(!data.content) throw new Error("API: "+JSON.stringify(data).slice(0,300));
     const text=data.content[0].text.trim();
     let result;
     try{result=JSON.parse(text);}catch{const m=text.match(/\{[\s\S]*\}/);result=m?JSON.parse(m[0]):null;}
     if(!result) throw new Error('Parse failed');
     currentResult=result;
     showResult(result);
-  }catch(err){ alert('Σφάλμα ανάλυσης. Δοκίμασε ξανά.'); }
+  }catch(err){ alert('Σφάλμα: ' + err.message + ' | ' + (data ? JSON.stringify(data).slice(0,200) : '')); }
   finally{ document.getElementById('loading').style.display='none'; btn.disabled=false; }
 }
 
