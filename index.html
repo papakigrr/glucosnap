@@ -1002,15 +1002,30 @@ function offDrag(){ document.getElementById('drop-zone').classList.remove('drag-
 function onDrop(e){ e.preventDefault(); offDrag(); const f=e.dataTransfer.files[0]; if(f) loadImageFile(f); }
 function handleFile(e){ const f=e.target.files[0]; if(f) loadImageFile(f); }
 function loadImageFile(file){
-  const r=new FileReader();
-  r.onload=e=>{
-    currentImageB64=e.target.result.split(',')[1];
-    document.getElementById('preview-img').src=e.target.result;
-    document.getElementById('preview-area').style.display='block';
-    document.getElementById('analyze-btn').style.display='block';
-    document.getElementById('result-card').style.display='none';
+  const img = new Image();
+  const reader = new FileReader();
+  reader.onload = e => {
+    img.onload = () => {
+      // Resize to max 1024px για κινητό
+      const MAX = 1024;
+      let w = img.width, h = img.height;
+      if(w > MAX || h > MAX){
+        if(w > h){ h = Math.round(h * MAX/w); w = MAX; }
+        else      { w = Math.round(w * MAX/h); h = MAX; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      const resized = canvas.toDataURL('image/jpeg', 0.85);
+      currentImageB64 = resized.split(',')[1];
+      document.getElementById('preview-img').src = resized;
+      document.getElementById('preview-area').style.display='block';
+      document.getElementById('analyze-btn').style.display='block';
+      document.getElementById('result-card').style.display='none';
+    };
+    img.src = e.target.result;
   };
-  r.readAsDataURL(file);
+  reader.readAsDataURL(file);
 }
 function clearImage(){
   currentImageB64=null; currentResult=null;
