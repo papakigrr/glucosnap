@@ -1007,7 +1007,7 @@ function loadImageFile(file){
   reader.onload = e => {
     img.onload = () => {
       // Resize to max 1024px για κινητό
-      const MAX = 1024;
+      const MAX = 1600;
       let w = img.width, h = img.height;
       if(w > MAX || h > MAX){
         if(w > h){ h = Math.round(h * MAX/w); w = MAX; }
@@ -1045,9 +1045,8 @@ async function analyzeImage(){
   document.getElementById('loading').style.display='flex';
   document.getElementById('result-card').style.display='none';
   try{
-    const prompt=`Είσαι ειδικός διατροφολόγος για προδιαβήτη. Ανάλυσε τη φωτογραφία φαγητού.
-Απάντησε ΜΟΝΟ με JSON (χωρίς markdown):
-{"name":"ελληνικό όνομα","calories":450,"protein_g":25,"carbs_g":40,"fat_g":18,"fiber_g":4,"gi":55,"gl":22,"gi_category":"low","diabetes_tip":"Σύντομη συμβουλή για προδιαβήτη.","description":"Σύντομη περιγραφή γεύματος."}
+    const prompt=`Είσαι ειδικός διατροφολόγος για προδιαβήτη. Κοίτα ΠΟΛΥ ΠΡΟΣΕΚΤΙΚΑ τη φωτογραφία και αναγνώρισε το ακριβές φαγητό. Πρόσεξε χρώμα, υφή, περιεχόμενα. Απάντησε ΜΟΝΟ με JSON (χωρίς markdown):
+{"name":"ελληνικό όνομα φαγητού","calories":450,"protein_g":25,"carbs_g":40,"fat_g":18,"fiber_g":4,"gi":55,"gl":22,"gi_category":"low","diabetes_tip":"Σύντομη συμβουλή για προδιαβήτη.","description":"Σύντομη περιγραφή γεύματος."}
 Κανόνες: gi=0-100 ακέραιος, gl=round(gi*carbs_g/100), gi_category: low(≤55)/medium(56-69)/high(≥70)`;
     const ANTHROPIC_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
       ? 'http://localhost:3000/anthropic/v1/messages'
