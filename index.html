@@ -665,7 +665,7 @@ function showTab(name,btn){
 //   const PROXY_URL = 'https://glucosnap-proxy.onrender.com/proxy';
 const PROXY_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
   ? 'http://localhost:3000/proxy'
-  : 'https://YOUR-PROXY-NAME.onrender.com/proxy'; // <-- άλλαξε μετά το deploy
+  : 'https://glucosnap-proxy.onrender.com/proxy'; // <-- άλλαξε μετά το deploy
 
 function getApiUrl(r){ return PROXY_URL; }  // proxy ignores region in URL, uses x-libre-region header
 
